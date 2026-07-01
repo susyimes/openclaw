@@ -7,7 +7,6 @@ import {
   createEmptyChangedLanes,
   detectChangedLanes,
   isChangedLaneTestPath,
-  isLiveDockerPackageScriptOnlyChange,
   isPackageScriptOnlyChange,
   listChangedPathsFromGit,
 } from "../../scripts/changed-lanes.mjs";
@@ -523,7 +522,7 @@ describe("scripts/changed-lanes", () => {
     const result = detectChangedLanes(["--", "scripts/test-live-acp-bind-docker.sh"]);
 
     expect(result.paths).toEqual(["scripts/test-live-acp-bind-docker.sh"]);
-    expect(result.lanes.liveDockerTooling).toBe(true);
+    expect(result.lanes.tooling).toBe(true);
     expect(result.lanes.all).toBe(false);
   });
 
@@ -965,7 +964,7 @@ describe("scripts/changed-lanes", () => {
     expect(plan.commands.map((command) => command.args[0])).not.toContain("test");
   });
 
-  it("routes live Docker ACP tooling changes through a focused gate", () => {
+  it("routes retired live Docker tooling paths through the normal tooling gate", () => {
     const result = detectChangedLanes([
       "scripts/lib/live-docker-auth.sh",
       "scripts/test-docker-all.mjs",
@@ -976,92 +975,18 @@ describe("scripts/changed-lanes", () => {
     const plan = createChangedCheckPlan(result);
 
     expectLanes(result.lanes, {
+      coreTests: true,
       docs: true,
-      liveDockerTooling: true,
+      tooling: true,
     });
-    expect(plan.commands.map((command) => command.name)).toEqual([
-      "conflict markers",
-      "changelog attributions",
-      "guarded extension wildcard re-exports",
-      "plugin-sdk wildcard re-exports",
-      "duplicate scan target coverage",
-      "dependency pin guard",
-      "package patch guard",
-      "test temp creation report (warning-only)",
-      "typecheck core tests",
-      "lint core",
-      "lint scripts",
-      "live Docker shell syntax",
+    expect(plan.commands.map((command) => command.name)).not.toContain("live Docker shell syntax");
+    expect(plan.commands.map((command) => command.name)).not.toContain(
       "live Docker scheduler dry run",
-    ]);
-    expect(plan.commands.find((command) => command.name === "live Docker shell syntax")).toEqual({
-      name: "live Docker shell syntax",
-      bin: "bash",
-      args: [
-        "-n",
-        "scripts/lib/live-docker-auth.sh",
-        "scripts/test-live-acp-bind-docker.sh",
-        "scripts/test-live-cli-backend-docker.sh",
-        "scripts/test-live-codex-harness-docker.sh",
-        "scripts/test-live-gateway-models-docker.sh",
-        "scripts/test-live-models-docker.sh",
-        "scripts/test-live-subagent-announce-docker.sh",
-      ],
-    });
-    const schedulerDryRun = plan.commands.find(
-      (command) => command.name === "live Docker scheduler dry run",
     );
-    expect(schedulerDryRun?.bin).toBe("node");
-    expect(schedulerDryRun?.args).toEqual(["scripts/test-docker-all.mjs"]);
-    expect(schedulerDryRun?.env?.OPENCLAW_DOCKER_ALL_DRY_RUN).toBe("1");
-    expect(schedulerDryRun?.env?.OPENCLAW_DOCKER_ALL_LIVE_MODE).toBe("only");
   });
 
-  it("routes live Docker package script-only changes through the focused gate", () => {
-    const before = `${JSON.stringify(
-      {
-        name: "fixture",
-        scripts: {
-          "test:docker:all": "node scripts/test-docker-all.mjs",
-        },
-        dependencies: {
-          leftpad: "1.0.0",
-        },
-      },
-      null,
-      2,
-    )}\n`;
-    const after = `${JSON.stringify(
-      {
-        name: "fixture",
-        scripts: {
-          "test:docker:all": "node scripts/test-docker-all.mjs",
-          "test:docker:live-acp-bind:droid":
-            "OPENCLAW_LIVE_ACP_BIND_AGENT=droid bash scripts/test-live-acp-bind-docker.sh",
-        },
-        dependencies: {
-          leftpad: "1.0.0",
-        },
-      },
-      null,
-      2,
-    )}\n`;
-
-    expect(isLiveDockerPackageScriptOnlyChange(before, after)).toBe(true);
-
-    const result = detectChangedLanes(["package.json"], {
-      packageJsonChangeKind: "liveDockerTooling",
-    });
-    const plan = createChangedCheckPlan(result);
-
-    expectLanes(result.lanes, {
-      liveDockerTooling: true,
-    });
-    expect(plan.commands.map((command) => command.name)).toContain("live Docker scheduler dry run");
-  });
-
-  it("classifies live Docker package script changes from the git diff", () => {
-    const dir = makeTempRepoRoot(tempDirs, "openclaw-live-docker-package-");
+  it("classifies retired Docker package script changes as normal package scripts", () => {
+    const dir = makeTempRepoRoot(tempDirs, "openclaw-docker-package-scripts-");
     git(dir, ["init", "-q", "--initial-branch=main"]);
     writeFileSync(
       path.join(dir, "package.json"),
@@ -1119,7 +1044,7 @@ describe("scripts/changed-lanes", () => {
     const result = parseChangedLaneOutput(output);
 
     expect(result.paths).toEqual(["package.json"]);
-    expectLanes(result.lanes, { liveDockerTooling: true });
+    expectLanes(result.lanes, { tooling: true });
   });
 
   it("classifies normal package script changes from the git diff", () => {
@@ -1187,28 +1112,6 @@ describe("scripts/changed-lanes", () => {
 
     expect(result.paths).toEqual(["package.json"]);
     expectLanes(result.lanes, { tooling: true });
-  });
-
-  it("keeps non-script package changes off the live Docker focused gate", () => {
-    const before = `${JSON.stringify(
-      { name: "fixture", scripts: {}, dependencies: { leftpad: "1.0.0" } },
-      null,
-      2,
-    )}\n`;
-    const after = `${JSON.stringify(
-      {
-        name: "fixture",
-        scripts: {
-          "test:docker:live-acp-bind:droid":
-            "OPENCLAW_LIVE_ACP_BIND_AGENT=droid bash scripts/test-live-acp-bind-docker.sh",
-        },
-        dependencies: { leftpad: "1.0.1" },
-      },
-      null,
-      2,
-    )}\n`;
-
-    expect(isLiveDockerPackageScriptOnlyChange(before, after)).toBe(false);
   });
 
   it("routes package script-only changes through the tooling gate", () => {
@@ -1666,7 +1569,6 @@ describe("scripts/changed-lanes", () => {
       apps: false,
       docs: false,
       tooling: false,
-      liveDockerTooling: false,
       releaseMetadata: false,
       all: false,
     });

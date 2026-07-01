@@ -308,8 +308,8 @@ describe("scripts/test-projects changed-target routing", () => {
 
   it("routes nested scripts through conventional owner tests", () => {
     expect(resolveChangedTestTargetPlan(["scripts/e2e/openwebui-probe.mjs"])).toEqual({
-      mode: "targets",
-      targets: ["test/e2e/qa-lab/runtime/openwebui-probe.e2e.test.ts"],
+      mode: "none",
+      targets: [],
     });
     expect(resolveChangedTestTargetPlan(["scripts/lib/docker-e2e-plan.mjs"])).toEqual({
       mode: "targets",
@@ -329,7 +329,7 @@ describe("scripts/test-projects changed-target routing", () => {
     });
   });
 
-  it("routes nested e2e library helpers through owner tests", () => {
+  it("skips retired nested e2e library helpers while keeping existing QA helpers", () => {
     const expectedTargets = new Map([
       [
         "scripts/e2e/lib/bundled-plugin-install-uninstall/probe.mjs",
@@ -468,14 +468,21 @@ describe("scripts/test-projects changed-target routing", () => {
     ]);
 
     for (const [source, targets] of expectedTargets) {
+      if (!source.startsWith("scripts/e2e/")) {
+        expect(resolveChangedTestTargetPlan([source]), source).toEqual({
+          mode: "targets",
+          targets,
+        });
+        continue;
+      }
       expect(resolveChangedTestTargetPlan([source]), source).toEqual({
-        mode: "targets",
-        targets,
+        mode: "none",
+        targets: [],
       });
     }
   });
 
-  it("routes nested e2e shell helpers through their sourced owner tests", () => {
+  it("skips retired nested e2e shell helpers", () => {
     const expectedTargets = new Map([
       [
         "scripts/e2e/lib/bun-global-install/assertions.mjs",
@@ -968,10 +975,10 @@ describe("scripts/test-projects changed-target routing", () => {
       ["scripts/e2e/qr-import-docker.sh", ["test/scripts/docker-build-helper.test.ts"]],
     ]);
 
-    for (const [source, targets] of expectedTargets) {
+    for (const source of expectedTargets.keys()) {
       expect(resolveChangedTestTargetPlan([source]), source).toEqual({
-        mode: "targets",
-        targets,
+        mode: "none",
+        targets: [],
       });
     }
   });
@@ -1459,7 +1466,6 @@ describe("scripts/test-projects changed-target routing", () => {
       ["scripts/make_appcast.sh", ["test/scripts/make-appcast.test.ts"]],
       ["scripts/package-mac-app.sh", ["test/scripts/package-mac-app.test.ts"]],
       ["scripts/package-mac-dist.sh", ["test/scripts/package-mac-dist.test.ts"]],
-      ["scripts/e2e/bun-global-install-smoke.sh", ["test/scripts/test-install-sh-docker.test.ts"]],
       [
         "scripts/sparkle-build.ts",
         [
@@ -1498,6 +1504,11 @@ describe("scripts/test-projects changed-target routing", () => {
         targets,
       });
     }
+
+    expect(resolveChangedTestTargetPlan(["scripts/e2e/bun-global-install-smoke.sh"])).toEqual({
+      mode: "none",
+      targets: [],
+    });
   });
 
   it("routes script declaration edits through implementation owner tests", () => {
@@ -1561,6 +1572,11 @@ describe("scripts/test-projects changed-target routing", () => {
         targets,
       });
     }
+
+    expect(resolveChangedTestTargetPlan(["scripts/docker/cleanup-smoke/Dockerfile"])).toEqual({
+      mode: "none",
+      targets: [],
+    });
   });
 
   it("keeps auth monitoring helper edits on owner tests", () => {
@@ -2085,12 +2101,31 @@ describe("scripts/test-projects changed-target routing", () => {
       ["scripts/lib/extension-vitest-paths.mjs", ["test/scripts/test-extension.test.ts"]],
     ]);
 
+    expectedTargets.delete("scripts/docker/cleanup-smoke/Dockerfile");
+    expectedTargets.delete("scripts/docker/cleanup-smoke/run.sh");
+
     for (const [source, targets] of expectedTargets) {
+      if (source.startsWith("scripts/docker/") || source.startsWith("scripts/e2e/")) {
+        expect(resolveChangedTestTargetPlan([source]), source).toEqual({
+          mode: "none",
+          targets: [],
+        });
+        continue;
+      }
       expect(resolveChangedTestTargetPlan([source]), source).toEqual({
         mode: "targets",
         targets,
       });
     }
+
+    expect(resolveChangedTestTargetPlan(["scripts/docker/cleanup-smoke/Dockerfile"])).toEqual({
+      mode: "none",
+      targets: [],
+    });
+    expect(resolveChangedTestTargetPlan(["scripts/docker/cleanup-smoke/run.sh"])).toEqual({
+      mode: "none",
+      targets: [],
+    });
   });
 
   it("keeps plugin SDK boundary tooling edits on owner tests", () => {
@@ -2341,7 +2376,7 @@ describe("scripts/test-projects changed-target routing", () => {
     ]);
   });
 
-  it("routes changed Parallels process helpers to their owner tooling tests", () => {
+  it("skips retired Parallels process helpers", () => {
     expect(
       buildVitestRunPlans(["--changed", "origin/main"], process.cwd(), () => [
         "scripts/e2e/parallels/filesystem.ts",
@@ -2364,19 +2399,7 @@ describe("scripts/test-projects changed-target routing", () => {
         "scripts/e2e/lib/parallels-macos-common.sh",
         "scripts/e2e/lib/parallels-package-common.sh",
       ]),
-    ).toEqual([
-      {
-        config: "test/vitest/vitest.tooling.config.ts",
-        forwardedArgs: [],
-        includePatterns: [
-          "test/scripts/parallels-smoke-model.test.ts",
-          "test/scripts/parallels-npm-update-smoke.test.ts",
-          "test/scripts/parallels-update-job-timeout.test.ts",
-          "test/scripts/parallels-lib-helpers.test.ts",
-        ],
-        watchMode: false,
-      },
-    ]);
+    ).toEqual([]);
   });
 
   it("routes mac restart helpers through restart-mac owner tests", () => {
@@ -2386,19 +2409,19 @@ describe("scripts/test-projects changed-target routing", () => {
     });
   });
 
-  it("routes Parallels common shell helpers through lib helper owner tests", () => {
+  it("skips retired Parallels common shell helpers", () => {
     for (const changedPath of [
       "scripts/e2e/lib/parallels-macos-common.sh",
       "scripts/e2e/lib/parallels-package-common.sh",
     ]) {
       expect(resolveChangedTestTargetPlan([changedPath]), changedPath).toEqual({
-        mode: "targets",
-        targets: ["test/scripts/parallels-lib-helpers.test.ts"],
+        mode: "none",
+        targets: [],
       });
     }
   });
 
-  it("routes MCP Docker E2E script targets instead of skipping changed tests", () => {
+  it("skips retired MCP Docker E2E paths while keeping existing script targets", () => {
     const targets = [
       "scripts/e2e/mcp-channels-docker.sh",
       "scripts/e2e/mcp-channels-docker-client.ts",
@@ -2420,26 +2443,13 @@ describe("scripts/test-projects changed-target routing", () => {
     expect(resolveChangedTestTargetPlan(targets)).toEqual({
       mode: "targets",
       targets: [
-        "test/scripts/docker-build-helper.test.ts",
-        "test/scripts/docker-e2e-observability.test.ts",
-        "test/scripts/docker-e2e-plan.test.ts",
-        "test/scripts/plugin-prerelease-test-plan.test.ts",
-        "test/scripts/docker-e2e-seeds.test.ts",
-        "test/scripts/mcp-channels-harness.test.ts",
         "test/scripts/mcp-code-mode-gateway-client.test.ts",
         "test/scripts/session-log-mentions.test.ts",
-        "src/agents/agent-bundle-mcp-runtime.test.ts",
-        "src/agents/agent-bundle-mcp-tools.materialize.test.ts",
-        "test/scripts/cron-mcp-cleanup-docker-client.test.ts",
-        "src/gateway/server.cron.test.ts",
-        "src/gateway/server-methods/agent.test.ts",
-        "src/cron/isolated-agent/run.fast-mode.test.ts",
-        "src/cron/active-jobs-manual-run.test.ts",
       ],
     });
   });
 
-  it("routes OpenAI image auth Docker E2E script targets instead of skipping changed tests", () => {
+  it("skips retired OpenAI image auth Docker E2E script targets", () => {
     const targets = [
       "scripts/e2e/openai-image-auth-docker.sh",
       "scripts/e2e/openai-image-auth-docker-client.ts",
@@ -2447,18 +2457,12 @@ describe("scripts/test-projects changed-target routing", () => {
 
     expect(findUnmatchedExplicitTestTargets(targets)).toEqual([]);
     expect(resolveChangedTestTargetPlan(targets)).toEqual({
-      mode: "targets",
-      targets: [
-        "test/scripts/docker-build-helper.test.ts",
-        "test/scripts/docker-e2e-plan.test.ts",
-        "test/scripts/openai-image-auth-docker-client.test.ts",
-        "extensions/openai/image-generation-provider.test.ts",
-        "src/image-generation/openai-compatible-image-provider.test.ts",
-      ],
+      mode: "none",
+      targets: [],
     });
   });
 
-  it("routes package-backed Docker shell targets instead of skipping changed tests", () => {
+  it("skips retired package-backed Docker shell targets", () => {
     const targets = [
       "scripts/e2e/codex-media-path-docker.sh",
       "scripts/e2e/codex-npm-plugin-live-docker.sh",
@@ -2470,18 +2474,12 @@ describe("scripts/test-projects changed-target routing", () => {
 
     expect(findUnmatchedExplicitTestTargets(targets)).toEqual([]);
     expect(resolveChangedTestTargetPlan(targets)).toEqual({
-      mode: "targets",
-      targets: [
-        "test/scripts/docker-build-helper.test.ts",
-        "test/scripts/docker-e2e-plan.test.ts",
-        "test/scripts/codex-media-path-client.test.ts",
-        "test/scripts/package-acceptance-workflow.test.ts",
-        "test/scripts/live-plugin-tool-assertions.test.ts",
-      ],
+      mode: "none",
+      targets: [],
     });
   });
 
-  it("routes Crestodian Docker E2E script targets instead of skipping changed tests", () => {
+  it("skips retired Crestodian Docker E2E script targets", () => {
     const targets = [
       "scripts/e2e/crestodian-first-run-docker.sh",
       "scripts/e2e/crestodian-first-run-docker-client.ts",
@@ -2494,21 +2492,8 @@ describe("scripts/test-projects changed-target routing", () => {
 
     expect(findUnmatchedExplicitTestTargets(targets)).toEqual([]);
     expect(resolveChangedTestTargetPlan(targets)).toEqual({
-      mode: "targets",
-      targets: [
-        "test/scripts/docker-build-helper.test.ts",
-        "test/scripts/docker-e2e-plan.test.ts",
-        "test/scripts/docker-e2e-crestodian.test.ts",
-        "src/cli/run-main.test.ts",
-        "src/cli/run-main.exit.test.ts",
-        "src/crestodian/crestodian.test.ts",
-        "src/crestodian/operations.test.ts",
-        "src/crestodian/overview.test.ts",
-        "src/crestodian/audit.test.ts",
-        "src/crestodian/assistant.test.ts",
-        "src/crestodian/rescue-policy.test.ts",
-        "src/crestodian/rescue-message.test.ts",
-      ],
+      mode: "none",
+      targets: [],
     });
   });
 

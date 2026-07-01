@@ -29,15 +29,6 @@ import {
 import { runManagedCommand } from "./lib/managed-child-process.mjs";
 import { createSparseTsgoSkipEnv } from "./lib/tsgo-sparse-guard.mjs";
 
-const LIVE_DOCKER_AUTH_SHELL_TARGETS = [
-  "scripts/lib/live-docker-auth.sh",
-  "scripts/test-live-acp-bind-docker.sh",
-  "scripts/test-live-cli-backend-docker.sh",
-  "scripts/test-live-codex-harness-docker.sh",
-  "scripts/test-live-gateway-models-docker.sh",
-  "scripts/test-live-models-docker.sh",
-  "scripts/test-live-subagent-announce-docker.sh",
-];
 const SHRINKWRAP_POLICY_PATH_RE =
   /^(?:npm-shrinkwrap\.json|package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|scripts\/generate-npm-shrinkwrap\.mjs|extensions\/[^/]+\/(?:package\.json|npm-shrinkwrap\.json))$/u;
 const PROMPT_SNAPSHOT_CHECK_PATH_RE =
@@ -405,17 +396,10 @@ export function createChangedCheckPlan(result, options = {}) {
       addLint("lint core", ["lint:core"]);
     }
   }
-  if (
-    lanes.liveDockerTooling &&
-    result.paths.some((changedPath) => changedPath.startsWith("src/"))
-  ) {
-    addTypecheck("typecheck core tests", ["tsgo:core:test"]);
-    addLint("lint core", ["lint:core"]);
-  }
   if (lanes.extensions || lanes.extensionTests) {
     addLint("lint extensions", ["lint:extensions"]);
   }
-  if (lanes.tooling || lanes.liveDockerTooling) {
+  if (lanes.tooling) {
     addLint("lint scripts", ["lint:scripts"]);
   }
   if (lanes.apps && shouldSkipAppLintForMissingSwiftlint({ ...options, env: baseEnv })) {
@@ -445,15 +429,6 @@ export function createChangedCheckPlan(result, options = {}) {
     add("webhook body guard", ["lint:webhook:no-low-level-body-read"]);
     add("pairing store guard", ["lint:auth:no-pairing-store-group"]);
     add("pairing account guard", ["lint:auth:pairing-account-scope"]);
-  }
-
-  if (lanes.liveDockerTooling) {
-    addCommand("live Docker shell syntax", "bash", ["-n", ...LIVE_DOCKER_AUTH_SHELL_TARGETS]);
-    addCommand("live Docker scheduler dry run", "node", ["scripts/test-docker-all.mjs"], {
-      ...baseEnv,
-      OPENCLAW_DOCKER_ALL_DRY_RUN: "1",
-      OPENCLAW_DOCKER_ALL_LIVE_MODE: "only",
-    });
   }
 
   return {

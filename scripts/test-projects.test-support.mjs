@@ -243,6 +243,8 @@ const TOOLING_ISOLATED_VITEST_CONFIG = "test/vitest/vitest.tooling-isolated.conf
 const TOOLING_VITEST_CONFIG = "test/vitest/vitest.tooling.config.ts";
 const TOOLING_DOCKER_TEST_TARGET = "test/scripts/docker-build-helper.test.ts";
 const TOOLING_ISOLATED_TEST_TARGET = "test/scripts/openclaw-e2e-instance.test.ts";
+const RETIRED_RUNTIME_VARIANT_SOURCE_TARGET_RE =
+  /^(?:scripts\/e2e\/|scripts\/docker\/|scripts\/test-docker-all\.mjs$|scripts\/test-live-(?:acp-bind|cli-backend|codex-harness|gateway-models|models|subagent-announce)-docker\.sh$)/u;
 const BROAD_TOOLING_SCRIPT_TEST_PATTERNS = new Set([
   "test/scripts/**/*.test.ts",
   "test/scripts/*.test.ts",
@@ -3238,6 +3240,13 @@ function isDeletedChangedTestTarget(changedPath, cwd) {
   return isTestFileTarget(changedPath) && !fs.existsSync(path.join(cwd, changedPath));
 }
 
+function isDeletedRetiredRuntimeVariantTarget(changedPath, cwd) {
+  return (
+    RETIRED_RUNTIME_VARIANT_SOURCE_TARGET_RE.test(changedPath) &&
+    !fs.existsSync(path.join(cwd, changedPath))
+  );
+}
+
 /**
  * Maps changed repo paths to the smallest useful Vitest target plan.
  */
@@ -3247,8 +3256,13 @@ export function resolveChangedTestTargetPlan(changedPaths, options = {}) {
   }
   const cwd = options.cwd ?? process.cwd();
   const executableChangedPaths = changedPaths.filter(
-    (changedPath) => !isDeletedChangedTestTarget(changedPath, cwd),
+    (changedPath) =>
+      !isDeletedChangedTestTarget(changedPath, cwd) &&
+      !isDeletedRetiredRuntimeVariantTarget(changedPath, cwd),
   );
+  if (executableChangedPaths.length === 0) {
+    return { mode: "none", targets: [] };
+  }
   const toolingTargets = resolveToolingChangedTestTargets(executableChangedPaths, cwd);
   if (toolingTargets) {
     return { mode: "targets", targets: toolingTargets };

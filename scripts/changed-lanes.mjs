@@ -18,9 +18,6 @@ const TOOLING_PATH_RE =
 const ROOT_GLOBAL_PATH_RE =
   /^(?:package\.json$|pnpm-lock\.yaml$|pnpm-workspace\.yaml$|tsdown\.config\.ts$|vitest\.config\.ts$)/u;
 const LEGACY_ROOT_ASSET_PATH_RE = /^assets\//u;
-const LIVE_DOCKER_TOOLING_PATH_RE =
-  /^(?:scripts\/test-docker-all\.mjs|scripts\/test-docker-all\.sh|scripts\/lib\/live-docker-auth\.sh|scripts\/test-live-(?:acp-bind|cli-backend|codex-harness|gateway-models|models)-docker\.sh|src\/gateway\/gateway-acp-bind\.live\.test\.ts|src\/gateway\/live-agent-probes\.test\.ts)$/u;
-const LIVE_DOCKER_PACKAGE_SCRIPT_RE = /^test:docker:live-[\w:-]+$/u;
 const TEST_PATH_RE =
   /(?:^|\/)(?:test|__tests__)\/|(?:\.|\/)(?:test|spec|e2e|browser\.test)\.[cm]?[jt]sx?$/u;
 const PUBLIC_EXTENSION_CONTRACT_RE =
@@ -44,7 +41,7 @@ export const RELEASE_METADATA_PATHS = new Set([
   "package.json",
 ]);
 
-/** @typedef {"core" | "coreTests" | "extensions" | "extensionTests" | "apps" | "docs" | "tooling" | "liveDockerTooling" | "releaseMetadata" | "all"} ChangedLane */
+/** @typedef {"core" | "coreTests" | "extensions" | "extensionTests" | "apps" | "docs" | "tooling" | "releaseMetadata" | "all"} ChangedLane */
 
 /**
  * @typedef {{
@@ -78,7 +75,6 @@ export function createEmptyChangedLanes() {
     apps: false,
     docs: false,
     tooling: false,
-    liveDockerTooling: false,
     releaseMetadata: false,
     all: false,
   };
@@ -90,7 +86,7 @@ export function isChangedLaneTestPath(changedPath) {
 
 /**
  * @param {string[]} changedPaths
- * @param {{ packageJsonChangeKind?: "liveDockerTooling" | "tooling" | null }} [options]
+ * @param {{ packageJsonChangeKind?: "tooling" | null }} [options]
  * @returns {ChangedLaneResult}
  */
 /**
@@ -104,8 +100,6 @@ export function detectChangedLanes(changedPaths, options = {}) {
   const reasons = [];
   let extensionImpactFromCore = false;
   let hasNonDocs = false;
-  const packageJsonIsLiveDockerTooling =
-    paths.includes("package.json") && options.packageJsonChangeKind === "liveDockerTooling";
   const packageJsonIsTooling =
     paths.includes("package.json") && options.packageJsonChangeKind === "tooling";
 
@@ -115,7 +109,6 @@ export function detectChangedLanes(changedPaths, options = {}) {
   }
 
   if (
-    !packageJsonIsLiveDockerTooling &&
     !packageJsonIsTooling &&
     paths.some((changedPath) => RELEASE_METADATA_PATHS.has(changedPath)) &&
     paths.every((changedPath) => RELEASE_METADATA_PATHS.has(changedPath))
@@ -136,21 +129,9 @@ export function detectChangedLanes(changedPaths, options = {}) {
 
     hasNonDocs = true;
 
-    if (changedPath === "package.json" && packageJsonIsLiveDockerTooling) {
-      lanes.liveDockerTooling = true;
-      reasons.push(`${changedPath}: live Docker package scripts`);
-      continue;
-    }
-
     if (changedPath === "package.json" && packageJsonIsTooling) {
       lanes.tooling = true;
       reasons.push(`${changedPath}: package scripts`);
-      continue;
-    }
-
-    if (LIVE_DOCKER_TOOLING_PATH_RE.test(changedPath)) {
-      lanes.liveDockerTooling = true;
-      reasons.push(`${changedPath}: live Docker tooling surface`);
       continue;
     }
 
@@ -363,30 +344,10 @@ export function listStagedChangedPaths(cwd = process.cwd()) {
 export function classifyPackageJsonChangeFromGit(params) {
   try {
     const { before, after } = readPackageJsonBeforeAfter(params);
-    if (isLiveDockerPackageScriptOnlyChange(before, after)) {
-      return "liveDockerTooling";
-    }
     return isPackageScriptOnlyChange(before, after) ? "tooling" : null;
   } catch {
     return null;
   }
-}
-
-/**
- * Checks whether package scripts changed only live Docker script entries.
- */
-export function isLiveDockerPackageScriptOnlyChange(before, after) {
-  const beforePackage = JSON.parse(before);
-  const afterPackage = JSON.parse(after);
-  const beforeAllowed = extractLiveDockerPackageScripts(beforePackage);
-  const afterAllowed = extractLiveDockerPackageScripts(afterPackage);
-  const beforeStripped = stripLiveDockerPackageScripts(beforePackage);
-  const afterStripped = stripLiveDockerPackageScripts(afterPackage);
-
-  return (
-    stableJson(beforeStripped) === stableJson(afterStripped) &&
-    stableJson(beforeAllowed) !== stableJson(afterAllowed)
-  );
 }
 
 /**
@@ -432,30 +393,6 @@ function readGitText(ref, filePath) {
     encoding: "utf8",
     maxBuffer: 16 * 1024 * 1024,
   });
-}
-
-function extractLiveDockerPackageScripts(packageJson) {
-  const scripts = packageJson?.scripts;
-  if (!scripts || typeof scripts !== "object" || Array.isArray(scripts)) {
-    return {};
-  }
-  return Object.fromEntries(
-    Object.entries(scripts).filter(([name]) => LIVE_DOCKER_PACKAGE_SCRIPT_RE.test(name)),
-  );
-}
-
-function stripLiveDockerPackageScripts(packageJson) {
-  const clone = structuredClone(packageJson);
-  const scripts = clone.scripts;
-  if (!scripts || typeof scripts !== "object" || Array.isArray(scripts)) {
-    return clone;
-  }
-  for (const name of Object.keys(scripts)) {
-    if (LIVE_DOCKER_PACKAGE_SCRIPT_RE.test(name)) {
-      delete scripts[name];
-    }
-  }
-  return clone;
 }
 
 function extractPackageScripts(packageJson) {
