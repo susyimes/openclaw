@@ -1,4 +1,5 @@
 // Gateway Protocol tests cover native protocol levels.guard behavior.
+import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { describe, it } from "vitest";
@@ -23,6 +24,25 @@ const expectedLevels: ProtocolLevels = {
   min: MIN_CLIENT_PROTOCOL_VERSION,
   max: PROTOCOL_VERSION,
 };
+
+const SWIFT_GENERATED_PATH =
+  "apps/shared/OpenClawKit/Sources/OpenClawProtocol/GatewayModels.swift";
+const ANDROID_PROTOCOL_PATH =
+  "apps/android/app/src/main/java/ai/openclaw/app/gateway/GatewayProtocol.kt";
+const SWIFT_CONNECT_FILES = [
+  "apps/shared/OpenClawKit/Sources/OpenClawKit/GatewayChannel.swift",
+  "apps/macos/Sources/OpenClawMacCLI/WizardCommand.swift",
+];
+const ANDROID_SESSION_PATH =
+  "apps/android/app/src/main/java/ai/openclaw/app/gateway/GatewaySession.kt";
+
+const nativeProtocolSourcesAvailable = [
+  SWIFT_GENERATED_PATH,
+  ANDROID_PROTOCOL_PATH,
+  ...SWIFT_CONNECT_FILES,
+  ANDROID_SESSION_PATH,
+].every((relativePath) => existsSync(path.join(process.cwd(), relativePath)));
+const nativeIt = nativeProtocolSourcesAvailable ? it : it.skip;
 
 /** Reads a repo-relative source file used by a native protocol guard. */
 async function readRepoFile(relativePath: string): Promise<string> {
@@ -93,15 +113,14 @@ function stringLiteralUnionValues(schema: unknown): string[] | undefined {
 }
 
 describe("native Gateway protocol levels", () => {
-  it("match the TypeScript source of truth", async () => {
+  nativeIt("match the TypeScript source of truth", async () => {
     if (MIN_CLIENT_PROTOCOL_VERSION > PROTOCOL_VERSION) {
       throw new Error(
         `packages/gateway-protocol/src/version.ts: MIN_CLIENT_PROTOCOL_VERSION (${MIN_CLIENT_PROTOCOL_VERSION}) must not exceed PROTOCOL_VERSION (${PROTOCOL_VERSION}).`,
       );
     }
 
-    const swiftGeneratedPath =
-      "apps/shared/OpenClawKit/Sources/OpenClawProtocol/GatewayModels.swift";
+    const swiftGeneratedPath = SWIFT_GENERATED_PATH;
     const swiftGenerated = await readRepoFile(swiftGeneratedPath);
     assertLevelsMatch(swiftGeneratedPath, {
       min: extractInteger(
@@ -118,7 +137,7 @@ describe("native Gateway protocol levels", () => {
       ),
     });
 
-    const androidPath = "apps/android/app/src/main/java/ai/openclaw/app/gateway/GatewayProtocol.kt";
+    const androidPath = ANDROID_PROTOCOL_PATH;
     const android = await readRepoFile(androidPath);
     assertLevelsMatch(androidPath, {
       min: extractInteger(
@@ -136,12 +155,8 @@ describe("native Gateway protocol levels", () => {
     });
   });
 
-  it("uses the min constant for native connect compatibility ranges", async () => {
-    const swiftConnectFiles = [
-      "apps/shared/OpenClawKit/Sources/OpenClawKit/GatewayChannel.swift",
-      "apps/macos/Sources/OpenClawMacCLI/WizardCommand.swift",
-    ];
-    for (const relativePath of swiftConnectFiles) {
+  nativeIt("uses the min constant for native connect compatibility ranges", async () => {
+    for (const relativePath of SWIFT_CONNECT_FILES) {
       const content = await readRepoFile(relativePath);
       assertPattern(
         content,
@@ -157,7 +172,7 @@ describe("native Gateway protocol levels", () => {
       );
     }
 
-    const androidPath = "apps/android/app/src/main/java/ai/openclaw/app/gateway/GatewaySession.kt";
+    const androidPath = ANDROID_SESSION_PATH;
     const android = await readRepoFile(androidPath);
     assertPattern(
       android,
@@ -204,9 +219,8 @@ describe("native Gateway protocol levels", () => {
     }
   });
 
-  it("emits named string-literal unions as Swift enums", async () => {
-    const swiftGeneratedPath =
-      "apps/shared/OpenClawKit/Sources/OpenClawProtocol/GatewayModels.swift";
+  nativeIt("emits named string-literal unions as Swift enums", async () => {
+    const swiftGeneratedPath = SWIFT_GENERATED_PATH;
     const swiftGenerated = await readRepoFile(swiftGeneratedPath);
 
     for (const [name, schema] of Object.entries(ProtocolSchemas)) {

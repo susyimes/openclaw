@@ -12,10 +12,8 @@ Security work is shared across a number of OpenClaw maintainers, including engin
 
 Report vulnerabilities directly to the repository where the issue lives:
 
-- **Core CLI and gateway** — [openclaw/openclaw](https://github.com/openclaw/openclaw)
-- **macOS desktop app** — [openclaw/openclaw](https://github.com/openclaw/openclaw) (apps/macos)
-- **iOS app** — [openclaw/openclaw](https://github.com/openclaw/openclaw) (apps/ios)
-- **Android app** — [openclaw/openclaw](https://github.com/openclaw/openclaw) (apps/android)
+- **Core CLI, Gateway, and runtime variant code** — this repository.
+- **Upstream macOS/iOS/Android apps** — not bundled in this runtime variant.
 - **ClawHub** — [openclaw/clawhub](https://github.com/openclaw/clawhub)
 - **Trust and threat model** — [openclaw/trust](https://github.com/openclaw/trust)
 
@@ -349,7 +347,7 @@ OpenClaw uses several security and release-validation layers. No single scanner 
 
 ### Secret Detection
 
-OpenClaw runs the pre-commit `detect-private-key` hook in CI and keeps secret-resolution behavior covered by the dedicated secrets test surface.
+This runtime variant keeps secret-resolution behavior covered by the dedicated secrets test surface. Run secret scans locally or in your private CI before publishing changes.
 
 Run the key scan locally:
 
@@ -359,7 +357,7 @@ pre-commit run --all-files detect-private-key
 
 ### Static Analysis
 
-CI runs CodeQL across core TypeScript, GitHub Actions, Android, macOS, and high-risk runtime boundaries using `.github/workflows/codeql*.yml` and `.github/codeql/*.yml`.
+This runtime variant does not ship the upstream GitHub Actions, CodeQL, Android, or macOS CI matrix. Treat local static analysis and your private repository checks as the active validation surface.
 
 OpenGrep provides a high-precision Semgrep-compatible layer. PRs run a changed-path scan; maintainers can run a full repository scan when needed. The rulepack lives under `security/opengrep/`, with `.semgrepignore` as the shared exclusion file.
 
@@ -374,9 +372,8 @@ pnpm check:opengrep-rule-metadata
 
 Security-relevant behavior is also covered by runtime validation, not only static scanning:
 
-- `pnpm test:e2e` for repo E2E coverage.
-- `pnpm test:live` for live provider/runtime coverage.
-- `pnpm test:docker:all` for Docker-packaged runtime scenarios.
-- Package acceptance and scheduled live/E2E workflows for release-path validation.
+- `npm test` for the repository-local test matrix.
+- `node scripts/run-vitest.mjs` for focused Vitest routing.
+- `node scripts/run-tsgo.mjs -p tsconfig.core.json` and `node scripts/run-tsgo.mjs -p tsconfig.extensions.json` for retained runtime TypeScript surfaces.
 
-These lanes exercise packaged installs, gateway/runtime behavior, live model/provider paths, Docker scenarios, and platform smoke tests. They complement scanners by proving the security-sensitive flows still behave correctly in real runtime environments.
+These lanes exercise the retained Gateway/runtime behavior without relying on the removed upstream mobile, CI, Docker-release, or showcase infrastructure.

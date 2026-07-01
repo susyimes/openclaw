@@ -94,9 +94,12 @@ describe("message-channel", () => {
     expect(isNativeApprovalChannel("TELEGRAM")).toBe(false);
   });
 
-  it("reads markdown capability from channel metadata", () => {
-    expect(isMarkdownCapableMessageChannel("telegram")).toBe(true);
+  it("treats removed external channel metadata as plain text", () => {
+    expect(isMarkdownCapableMessageChannel("telegram")).toBe(false);
     expect(isMarkdownCapableMessageChannel("whatsapp")).toBe(false);
+  });
+
+  it("reads markdown capability from registered channel metadata", () => {
     setActivePluginRegistry(
       createTestRegistry([
         { pluginId: "demo-markdown-channel", plugin: demoMarkdownPlugin, source: "test" },

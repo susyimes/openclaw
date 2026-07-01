@@ -32,9 +32,13 @@
             "id": "brave",
             "label": "Brave Search",
             "hint": "Brave Search web results.",
-            "onboardingScopes": ["text-inference"],
+            "onboardingScopes": [
+              "text-inference"
+            ],
             "credentialLabel": "Brave Search API key",
-            "envVars": ["BRAVE_API_KEY"],
+            "envVars": [
+              "BRAVE_API_KEY"
+            ],
             "placeholder": "BSA...",
             "signupUrl": "https://api-dashboard.search.brave.com/app/keys",
             "docsUrl": "https://docs.openclaw.ai/tools/brave-search",
@@ -47,24 +51,6 @@
           "defaultChoice": "npm",
           "minHostVersion": ">=2026.4.10",
           "allowInvalidConfigRecovery": true
-        }
-      }
-    },
-    {
-      "name": "@openclaw/copilot",
-      "description": "OpenClaw GitHub Copilot agent runtime plugin",
-      "source": "official",
-      "kind": "plugin",
-      "openclaw": {
-        "plugin": {
-          "id": "copilot",
-          "label": "GitHub Copilot agent runtime"
-        },
-        "install": {
-          "clawhubSpec": "clawhub:@openclaw/copilot",
-          "npmSpec": "@openclaw/copilot",
-          "defaultChoice": "npm",
-          "minHostVersion": ">=2026.5.28"
         }
       }
     },
@@ -231,86 +217,6 @@
       }
     },
     {
-      "name": "@openclaw/google-meet",
-      "description": "OpenClaw Google Meet participant plugin",
-      "source": "official",
-      "kind": "plugin",
-      "openclaw": {
-        "plugin": {
-          "id": "google-meet",
-          "label": "Google Meet"
-        },
-        "install": {
-          "npmSpec": "@openclaw/google-meet",
-          "defaultChoice": "npm",
-          "minHostVersion": ">=2026.4.20"
-        }
-      }
-    },
-    {
-      "name": "@openclaw/gradium-speech",
-      "description": "OpenClaw Gradium speech plugin.",
-      "source": "official",
-      "kind": "plugin",
-      "openclaw": {
-        "plugin": {
-          "id": "gradium",
-          "label": "Gradium"
-        },
-        "contracts": {
-          "speechProviders": [
-            "gradium"
-          ]
-        },
-        "install": {
-          "clawhubSpec": "clawhub:@openclaw/gradium-speech",
-          "npmSpec": "@openclaw/gradium-speech",
-          "defaultChoice": "npm",
-          "minHostVersion": ">=2026.6.8"
-        }
-      }
-    },
-    {
-      "name": "@openclaw/inworld-speech",
-      "description": "OpenClaw Inworld speech plugin.",
-      "source": "official",
-      "kind": "plugin",
-      "openclaw": {
-        "plugin": {
-          "id": "inworld",
-          "label": "Inworld"
-        },
-        "contracts": {
-          "speechProviders": [
-            "inworld"
-          ]
-        },
-        "install": {
-          "clawhubSpec": "clawhub:@openclaw/inworld-speech",
-          "npmSpec": "@openclaw/inworld-speech",
-          "defaultChoice": "npm",
-          "minHostVersion": ">=2026.6.8"
-        }
-      }
-    },
-    {
-      "name": "@openclaw/lobster",
-      "description": "Lobster workflow tool plugin (typed pipelines + resumable approvals)",
-      "source": "official",
-      "kind": "plugin",
-      "openclaw": {
-        "plugin": {
-          "id": "lobster",
-          "label": "Lobster"
-        },
-        "install": {
-          "npmSpec": "@openclaw/lobster",
-          "defaultChoice": "npm",
-          "minHostVersion": ">=2026.4.25"
-        }
-      }
-    },
-    {
       "name": "@openclaw/memory-lancedb",
       "description": "OpenClaw LanceDB-backed long-term memory plugin with auto-recall/capture",
       "source": "official",
@@ -324,26 +230,6 @@
           "npmSpec": "@openclaw/memory-lancedb",
           "defaultChoice": "npm",
           "minHostVersion": ">=2026.5.31"
-        }
-      }
-    },
-    {
-      "name": "@openclaw/llama-cpp-provider",
-      "description": "OpenClaw llama.cpp embedding provider plugin",
-      "source": "official",
-      "kind": "plugin",
-      "openclaw": {
-        "plugin": {
-          "id": "llama-cpp",
-          "label": "llama.cpp Provider"
-        },
-        "contracts": {
-          "embeddingProviders": ["local"]
-        },
-        "install": {
-          "npmSpec": "@openclaw/llama-cpp-provider",
-          "defaultChoice": "npm",
-          "minHostVersion": ">=2026.6.2"
         }
       }
     },
@@ -418,67 +304,6 @@
           "npmSpec": "@openclaw/parallel-plugin",
           "defaultChoice": "npm",
           "minHostVersion": ">=2026.6.8"
-        }
-      }
-    },
-    {
-      "name": "@openclaw/perplexity-plugin",
-      "description": "OpenClaw Perplexity plugin.",
-      "source": "official",
-      "kind": "plugin",
-      "openclaw": {
-        "plugin": {
-          "id": "perplexity",
-          "label": "Perplexity"
-        },
-        "contracts": {
-          "webSearchProviders": [
-            "perplexity"
-          ]
-        },
-        "webSearchProviders": [
-          {
-            "id": "perplexity",
-            "label": "Perplexity Search",
-            "hint": "Requires Perplexity API key or OpenRouter API key · structured results",
-            "onboardingScopes": [
-              "text-inference"
-            ],
-            "credentialLabel": "Perplexity API key",
-            "envVars": [
-              "PERPLEXITY_API_KEY",
-              "OPENROUTER_API_KEY"
-            ],
-            "placeholder": "pplx-...",
-            "signupUrl": "https://www.perplexity.ai/settings/api",
-            "docsUrl": "https://docs.openclaw.ai/perplexity",
-            "credentialPath": "plugins.entries.perplexity.config.webSearch.apiKey",
-            "autoDetectOrder": 50
-          }
-        ],
-        "install": {
-          "clawhubSpec": "clawhub:@openclaw/perplexity-plugin",
-          "npmSpec": "@openclaw/perplexity-plugin",
-          "defaultChoice": "npm",
-          "minHostVersion": ">=2026.6.8"
-        }
-      }
-    },
-    {
-      "name": "@openclaw/pixverse-provider",
-      "description": "OpenClaw PixVerse video generation provider plugin",
-      "source": "official",
-      "kind": "plugin",
-      "openclaw": {
-        "plugin": {
-          "id": "pixverse",
-          "label": "PixVerse"
-        },
-        "install": {
-          "clawhubSpec": "clawhub:@openclaw/pixverse-provider",
-          "npmSpec": "@openclaw/pixverse-provider",
-          "defaultChoice": "npm",
-          "minHostVersion": ">=2026.5.26"
         }
       }
     },
@@ -588,23 +413,6 @@
           "npmSpec": "@openclaw/tokenjuice",
           "defaultChoice": "npm",
           "minHostVersion": ">=2026.5.28"
-        }
-      }
-    },
-    {
-      "name": "@openclaw/voice-call",
-      "description": "OpenClaw voice-call plugin",
-      "source": "official",
-      "kind": "plugin",
-      "openclaw": {
-        "plugin": {
-          "id": "voice-call",
-          "label": "Voice Call"
-        },
-        "install": {
-          "npmSpec": "@openclaw/voice-call",
-          "defaultChoice": "npm",
-          "minHostVersion": ">=2026.4.10"
         }
       }
     }

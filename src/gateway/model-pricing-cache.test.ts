@@ -729,13 +729,6 @@ describe("model-pricing-cache", () => {
                   input_cache_read: "0.0000003",
                 },
               },
-              {
-                id: "z-ai/glm-openrouter-test",
-                pricing: {
-                  prompt: "0.000001",
-                  completion: "0.000004",
-                },
-              },
             ],
           }),
           {
@@ -772,14 +765,9 @@ describe("model-pricing-cache", () => {
       cacheRead: 0.3,
       cacheWrite: 0,
     });
-    expect(getCachedGatewayModelPricing({ provider: "zai", model: "glm-openrouter-test" })).toEqual(
-      {
-        input: 1,
-        output: 4,
-        cacheRead: 0,
-        cacheWrite: 0,
-      },
-    );
+    expect(
+      getCachedGatewayModelPricing({ provider: "zai", model: "glm-openrouter-test" }),
+    ).toBeUndefined();
   });
 
   it("does not recurse forever for native openrouter auto refs", async () => {

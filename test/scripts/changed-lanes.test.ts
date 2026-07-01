@@ -1298,18 +1298,20 @@ describe("scripts/changed-lanes", () => {
     expect(
       shouldRunShrinkwrapGuard([
         "npm-shrinkwrap.json",
-        "extensions/slack/npm-shrinkwrap.json",
-        "extensions/slack/package.json",
+        "extensions/deepseek/npm-shrinkwrap.json",
+        "extensions/deepseek/package.json",
         "scripts/generate-npm-shrinkwrap.mjs",
       ]),
     ).toBe(true);
 
-    const result = detectChangedLanes(["extensions/slack/package.json"]);
+    const result = detectChangedLanes(["extensions/deepseek/package.json"]);
     const plan = createChangedCheckPlan(result);
-    const shrinkwrapGuard = createShrinkwrapGuardCommand(["extensions/slack/package.json"]);
+    const shrinkwrapGuard = createShrinkwrapGuardCommand(["extensions/deepseek/package.json"]);
 
     expect(
-      shrinkwrapGuard?.args.some((arg) => arg.replaceAll("\\", "/").endsWith("extensions/slack")),
+      shrinkwrapGuard?.args.some((arg) =>
+        arg.replaceAll("\\", "/").endsWith("extensions/deepseek"),
+      ),
     ).toBe(true);
     expect(plan.commands.map((command) => command.name)).toContain("npm shrinkwrap guard");
     expect(plan.commands.map((command) => command.args[0])).not.toContain("deps:shrinkwrap:check");
@@ -1380,71 +1382,6 @@ describe("scripts/changed-lanes", () => {
         name: "runtime sidecar owner test",
         args: ["test:serial", "src/plugins/bundled-plugin-metadata.test.ts"],
       }),
-    );
-  });
-
-  it("guards release metadata package changes to the top-level version field", () => {
-    const dir = makeTempRepoRoot(tempDirs, "openclaw-release-metadata-");
-    git(dir, ["init", "-q", "--initial-branch=main"]);
-    writeFileSync(
-      path.join(dir, "package.json"),
-      `${JSON.stringify({ name: "fixture", version: "2026.4.20", dependencies: { leftpad: "1.0.0" } }, null, 2)}\n`,
-      "utf8",
-    );
-    git(dir, ["add", "package.json"]);
-    git(dir, [
-      "-c",
-      "user.email=test@example.com",
-      "-c",
-      "user.name=Test User",
-      "commit",
-      "-q",
-      "-m",
-      "initial",
-    ]);
-
-    writeFileSync(
-      path.join(dir, "package.json"),
-      `${JSON.stringify({ name: "fixture", version: "2026.4.21", dependencies: { leftpad: "1.0.0" } }, null, 2)}\n`,
-      "utf8",
-    );
-    git(dir, ["add", "package.json"]);
-    expect(
-      execFileSync(
-        process.execPath,
-        [path.join(repoRoot, "scripts", "check-release-metadata-only.mjs"), "--staged"],
-        {
-          cwd: dir,
-          env: createNestedGitEnv(),
-          stdio: "pipe",
-        },
-      ),
-    ).toBeInstanceOf(Buffer);
-
-    writeFileSync(
-      path.join(dir, "package.json"),
-      `${JSON.stringify({ name: "fixture", version: "2026.4.21", dependencies: { leftpad: "1.0.1" } }, null, 2)}\n`,
-      "utf8",
-    );
-    git(dir, ["add", "package.json"]);
-    let failure: ExecFileSyncFailure | undefined;
-    try {
-      execFileSync(
-        process.execPath,
-        [path.join(repoRoot, "scripts", "check-release-metadata-only.mjs"), "--staged"],
-        {
-          cwd: dir,
-          env: createNestedGitEnv(),
-          stdio: "pipe",
-        },
-      );
-    } catch (error) {
-      failure = error as ExecFileSyncFailure;
-    }
-
-    expect(failure?.status).toBe(1);
-    expect(failure?.stderr?.toString("utf8")).toContain(
-      "[release-metadata] package.json changed outside the top-level version field",
     );
   });
 
@@ -1710,7 +1647,7 @@ describe("scripts/changed-lanes", () => {
   });
 
   it("routes changed extension Vitest configs to only their owning shard", () => {
-    const result = detectChangedLanes(["test/vitest/vitest.extension-discord.config.ts"]);
+    const result = detectChangedLanes(["test/vitest/vitest.extension-browser.config.ts"]);
     const plan = createChangedCheckPlan(result);
 
     expect(plan.commands.map((command) => command.args[0])).toContain("lint:scripts");

@@ -248,7 +248,7 @@ describe("scripts/lib/ci-node-test-plan.mjs", () => {
     expect(configs).not.toContain("test/vitest/vitest.contracts.config.ts");
     expect(configs).not.toContain("test/vitest/vitest.bundled.config.ts");
     expect(configs).not.toContain("test/vitest/vitest.full-extensions.config.ts");
-    expect(configs).not.toContain("test/vitest/vitest.extension-telegram.config.ts");
+    expect(configs).not.toContain("test/vitest/vitest.extension-browser.config.ts");
   });
 
   it("marks only dist-dependent shards for built artifact restore", () => {
@@ -274,13 +274,6 @@ describe("scripts/lib/ci-node-test-plan.mjs", () => {
         requiresDist: false,
         runner: "blacksmith-8vcpu-ubuntu-2404",
         shardName: "core-tooling",
-      },
-      {
-        checkName: "checks-node-core-tooling-docker",
-        configs: ["test/vitest/vitest.tooling-docker.config.ts"],
-        requiresDist: false,
-        runner: "blacksmith-8vcpu-ubuntu-2404",
-        shardName: "core-tooling-docker",
       },
     ]);
   });

@@ -1034,8 +1034,6 @@ describe("scripts/test-projects changed-target routing", () => {
         "src/auto-reply/reply/dispatch-from-config.test.ts",
         "src/auto-reply/reply/followup-runner.test.ts",
         "src/auto-reply/reply/groups.test.ts",
-        "extensions/discord/src/monitor/message-handler.process.test.ts",
-        "extensions/slack/src/monitor.tool-result.test.ts",
       ],
     });
   });
@@ -1049,8 +1047,6 @@ describe("scripts/test-projects changed-target routing", () => {
         "src/auto-reply/reply/dispatch-from-config.test.ts",
         "src/auto-reply/reply/followup-runner.test.ts",
         "src/auto-reply/reply/groups.test.ts",
-        "extensions/discord/src/monitor/message-handler.process.test.ts",
-        "extensions/slack/src/monitor.tool-result.test.ts",
       ],
     });
   });
@@ -1065,8 +1061,6 @@ describe("scripts/test-projects changed-target routing", () => {
         "src/auto-reply/reply/dispatch-from-config.test.ts",
         "src/auto-reply/reply/followup-runner.test.ts",
         "src/auto-reply/reply/groups.test.ts",
-        "extensions/discord/src/monitor/message-handler.process.test.ts",
-        "extensions/slack/src/monitor.tool-result.test.ts",
       ],
     });
   });
@@ -1080,8 +1074,6 @@ describe("scripts/test-projects changed-target routing", () => {
         "src/auto-reply/reply/dispatch-from-config.test.ts",
         "src/auto-reply/reply/followup-runner.test.ts",
         "src/auto-reply/reply/groups.test.ts",
-        "extensions/discord/src/monitor/message-handler.process.test.ts",
-        "extensions/slack/src/monitor.tool-result.test.ts",
       ],
     });
   });
@@ -2322,11 +2314,11 @@ describe("scripts/test-projects changed-target routing", () => {
   it("routes changed extension vitest configs to their own shard", () => {
     expect(
       buildVitestRunPlans(["--changed", "origin/main"], process.cwd(), () => [
-        "test/vitest/vitest.extension-discord.config.ts",
+        "test/vitest/vitest.extension-browser.config.ts",
       ]),
     ).toEqual([
       {
-        config: "test/vitest/vitest.extension-discord.config.ts",
+        config: "test/vitest/vitest.extension-browser.config.ts",
         forwardedArgs: [],
         includePatterns: null,
         watchMode: false,
@@ -2344,41 +2336,6 @@ describe("scripts/test-projects changed-target routing", () => {
         config: "test/vitest/vitest.tooling-isolated.config.ts",
         forwardedArgs: [],
         includePatterns: ["test/scripts/openclaw-e2e-instance.test.ts"],
-        watchMode: false,
-      },
-    ]);
-  });
-
-  it("routes Docker E2E script targets to their owner tooling tests", () => {
-    const targets = [
-      "scripts/e2e/kitchen-sink-plugin-docker.sh",
-      "scripts/e2e/kitchen-sink-rpc-docker.sh",
-      "scripts/e2e/kitchen-sink-rpc-walk.mjs",
-      "scripts/e2e/onboard-docker.sh",
-      "scripts/e2e/lib/plugin-lifecycle-matrix/measure.mjs",
-      "scripts/e2e/plugin-lifecycle-matrix-docker.sh",
-      "scripts/e2e/release-media-memory-docker.sh",
-    ];
-
-    expect(findUnmatchedExplicitTestTargets(targets)).toEqual([]);
-    expect(buildVitestRunPlans(targets, process.cwd())).toEqual([
-      {
-        config: "test/vitest/vitest.tooling-docker.config.ts",
-        forwardedArgs: [],
-        includePatterns: ["test/scripts/docker-build-helper.test.ts"],
-        watchMode: false,
-      },
-      {
-        config: "test/vitest/vitest.tooling.config.ts",
-        forwardedArgs: [],
-        includePatterns: [
-          "test/scripts/plugin-prerelease-test-plan.test.ts",
-          "test/scripts/kitchen-sink-rpc-walk.test.ts",
-          "test/scripts/openclaw-test-state.test.ts",
-          "test/scripts/plugin-lifecycle-measure.test.ts",
-          "test/scripts/docker-e2e-plan.test.ts",
-          "test/scripts/release-media-memory-scenario.test.ts",
-        ],
         watchMode: false,
       },
     ]);
@@ -2930,17 +2887,13 @@ describe("scripts/test-projects changed-target routing", () => {
 
     expect(plan.mode).toBe("targets");
     expect(plan.targets).toContain("src/channels/plugins/contracts/registry.contract.test.ts");
-    expect(plan.targets).not.toContain("extensions/discord/src/directory-contract.test.ts");
+    expect(plan.targets).not.toContain("extensions/browser/src/browser/cdp.test.ts");
   });
 
   it("routes channel SDK helper edits through the tests that import them", () => {
     expect(resolveChangedTestTargetPlan(["src/plugin-sdk/test-helpers/directory-ids.ts"])).toEqual({
       mode: "targets",
-      targets: [
-        "extensions/discord/src/directory-contract.test.ts",
-        "extensions/slack/src/directory-contract.test.ts",
-        "extensions/telegram/src/directory-contract.test.ts",
-      ],
+      targets: ["src/channels/plugins/contracts/registry.contract.test.ts"],
     });
   });
 
@@ -2956,7 +2909,7 @@ describe("scripts/test-projects changed-target routing", () => {
     expect(plan.targets).toContain(
       "src/channels/plugins/contracts/threading.registry-backed-shard-h.contract.test.ts",
     );
-    expect(plan.targets).not.toContain("extensions/discord/src/channel-actions.contract.test.ts");
+    expect(plan.targets).not.toContain("extensions/browser/src/browser/cdp.test.ts");
   });
 
   it("routes precise plugin contract helpers without broad-running every shard", () => {
@@ -3100,16 +3053,16 @@ describe("scripts/test-projects changed-target routing", () => {
     ]);
   });
 
-  it("routes QA extension changes to the QA extension lane", () => {
+  it("routes browser extension changes to the browser extension lane", () => {
     const plans = buildVitestRunPlans(["--changed", "origin/main"], process.cwd(), () => [
-      "extensions/qa-lab/src/scenario-catalog.test.ts",
+      "extensions/browser/src/browser/cdp.ts",
     ]);
 
     expect(plans).toEqual([
       {
-        config: "test/vitest/vitest.extension-qa.config.ts",
+        config: "test/vitest/vitest.extension-browser.config.ts",
         forwardedArgs: [],
-        includePatterns: ["extensions/qa-lab/src/scenario-catalog.test.ts"],
+        includePatterns: ["extensions/browser/src/browser/cdp.test.ts"],
         watchMode: false,
       },
     ]);
@@ -3320,8 +3273,6 @@ describe("scripts/test-projects changed-target routing", () => {
         "src/auto-reply/reply/dispatch-from-config.test.ts",
         "src/auto-reply/reply/followup-runner.test.ts",
         "src/auto-reply/reply/groups.test.ts",
-        "extensions/discord/src/monitor/message-handler.process.test.ts",
-        "extensions/slack/src/monitor.tool-result.test.ts",
         "src/auto-reply/reply/effective-reply-route.test.ts",
       ],
     });
@@ -3341,27 +3292,6 @@ describe("scripts/test-projects changed-target routing", () => {
         "src/auto-reply/reply/commands-acp.test.ts",
         "src/auto-reply/reply/dispatch-acp-command-bypass.test.ts",
       ],
-    });
-  });
-
-  it("routes Google Meet CLI edits to the lightweight CLI tests", () => {
-    expect(resolveChangedTestTargetPlan(["extensions/google-meet/src/cli.ts"])).toEqual({
-      mode: "targets",
-      targets: ["extensions/google-meet/src/cli.test.ts"],
-    });
-  });
-
-  it("routes Google Meet OAuth edits to the lightweight OAuth tests", () => {
-    expect(resolveChangedTestTargetPlan(["extensions/google-meet/src/oauth.ts"])).toEqual({
-      mode: "targets",
-      targets: ["extensions/google-meet/src/oauth.test.ts"],
-    });
-  });
-
-  it("routes Google Meet entry edits to the plugin entry tests", () => {
-    expect(resolveChangedTestTargetPlan(["extensions/google-meet/index.ts"])).toEqual({
-      mode: "targets",
-      targets: ["extensions/google-meet/index.test.ts"],
     });
   });
 
@@ -3826,6 +3756,7 @@ describe("scripts/test-projects local heavy-check lock", () => {
 });
 
 describe("scripts/test-projects full-suite sharding", () => {
+  const variantExcludedFullSuiteTestFiles = new Set(["test/scripts/docker-build-helper.test.ts"]);
   let fullSuiteMatches: Map<string, string[]>;
   let normalFullSuiteTestFiles: string[];
   let leafShardPlans: ReturnType<typeof buildFullSuiteVitestRunPlans>;
@@ -3868,12 +3799,12 @@ describe("scripts/test-projects full-suite sharding", () => {
       "test/vitest/vitest.gateway-server.config.ts",
       "test/vitest/vitest.commands.config.ts",
       "test/vitest/vitest.extension-memory.config.ts",
-      "test/vitest/vitest.extension-msteams.config.ts",
+      "test/vitest/vitest.extension-browser.config.ts",
     ].map((config) => ({ config }));
 
     expect(orderFullSuiteSpecsForParallelRun(specs).map((spec) => spec.config)).toEqual([
       "test/vitest/vitest.gateway-server.config.ts",
-      "test/vitest/vitest.extension-msteams.config.ts",
+      "test/vitest/vitest.extension-browser.config.ts",
       "test/vitest/vitest.gateway.config.ts",
       "test/vitest/vitest.extension-memory.config.ts",
       "test/vitest/vitest.commands.config.ts",
@@ -3881,7 +3812,9 @@ describe("scripts/test-projects full-suite sharding", () => {
   });
 
   it("covers each normal full-suite test file exactly once", () => {
-    const missing = normalFullSuiteTestFiles.filter((file) => !fullSuiteMatches.has(file));
+    const missing = normalFullSuiteTestFiles.filter(
+      (file) => !variantExcludedFullSuiteTestFiles.has(file) && !fullSuiteMatches.has(file),
+    );
     const duplicated = [...fullSuiteMatches.entries()]
       .filter(([, configs]) => configs.length > 1)
       .map(([file, configs]) => `${file}: ${configs.join(", ")}`)
@@ -4019,7 +3952,7 @@ describe("scripts/test-projects full-suite sharding", () => {
 
       expect(configs).toContain("test/vitest/vitest.gateway-server.config.ts");
       expect(configs).toContain("test/vitest/vitest.auto-reply-reply.config.ts");
-      expect(configs).toContain("test/vitest/vitest.extension-telegram.config.ts");
+      expect(configs).toContain("test/vitest/vitest.extension-browser.config.ts");
       expect(configs).not.toContain("test/vitest/vitest.full-agentic.config.ts");
       expect(configs).not.toContain("test/vitest/vitest.full-extensions.config.ts");
     } finally {
@@ -4065,7 +3998,7 @@ describe("scripts/test-projects full-suite sharding", () => {
       const configs = buildFullSuiteVitestRunPlans([], process.cwd()).map((plan) => plan.config);
 
       expect(configs).toContain("test/vitest/vitest.gateway-server.config.ts");
-      expect(configs).toContain("test/vitest/vitest.extension-telegram.config.ts");
+      expect(configs).toContain("test/vitest/vitest.extension-browser.config.ts");
       expect(configs).not.toContain("test/vitest/vitest.full-agentic.config.ts");
       expect(configs).not.toContain("test/vitest/vitest.full-core-unit-fast.config.ts");
     } finally {
@@ -4221,7 +4154,6 @@ describe("scripts/test-projects full-suite sharding", () => {
       "test/vitest/vitest.unit-support.config.ts",
       "test/vitest/vitest.boundary.config.ts",
       "test/vitest/vitest.tooling.config.ts",
-      "test/vitest/vitest.tooling-docker.config.ts",
       "test/vitest/vitest.tooling-isolated.config.ts",
       "test/vitest/vitest.contracts-channel-surface.config.ts",
       "test/vitest/vitest.contracts-channel-config.config.ts",
@@ -4279,27 +4211,10 @@ describe("scripts/test-projects full-suite sharding", () => {
       "test/vitest/vitest.extension-codex-app-server-tools.config.ts",
       "test/vitest/vitest.extension-codex-surface.config.ts",
       "test/vitest/vitest.extension-diffs.config.ts",
-      "test/vitest/vitest.extension-discord.config.ts",
-      "test/vitest/vitest.extension-feishu.config.ts",
-      "test/vitest/vitest.extension-imessage.config.ts",
-      "test/vitest/vitest.extension-irc.config.ts",
-      "test/vitest/vitest.extension-line.config.ts",
-      "test/vitest/vitest.extension-mattermost.config.ts",
-      "test/vitest/vitest.extension-matrix.config.ts",
       "test/vitest/vitest.extension-memory.config.ts",
-      "test/vitest/vitest.extension-messaging.config.ts",
-      "test/vitest/vitest.extension-msteams.config.ts",
       "test/vitest/vitest.extension-provider-openai.config.ts",
       "test/vitest/vitest.extension-providers.config.ts",
-      "test/vitest/vitest.extension-signal.config.ts",
-      "test/vitest/vitest.extension-slack.config.ts",
-      "test/vitest/vitest.extension-telegram.config.ts",
-      "test/vitest/vitest.extension-voice-call.config.ts",
-      "test/vitest/vitest.extension-whatsapp.config.ts",
-      "test/vitest/vitest.extension-zalo.config.ts",
       "test/vitest/vitest.extension-browser.config.ts",
-      "test/vitest/vitest.extension-qa.config.ts",
-      "test/vitest/vitest.extension-media.config.ts",
       "test/vitest/vitest.extensions.config.ts",
       "test/vitest/vitest.extension-misc.config.ts",
     ]);
@@ -4423,7 +4338,7 @@ describe("scripts/test-projects full-suite sharding", () => {
     try {
       const configs = buildFullSuiteVitestRunPlans([], process.cwd()).map((plan) => plan.config);
 
-      expect(configs).toContain("test/vitest/vitest.extension-telegram.config.ts");
+      expect(configs).toContain("test/vitest/vitest.extension-browser.config.ts");
       expect(configs).not.toContain("test/vitest/vitest.full-extensions.config.ts");
     } finally {
       if (previousLeafShards === undefined) {
@@ -4479,7 +4394,7 @@ describe("scripts/test-projects parallel cache paths", () => {
     const specs = applyParallelVitestCachePaths(
       [
         { config: "test/vitest/vitest.gateway.config.ts", env: {}, pnpmArgs: [] },
-        { config: "test/vitest/vitest.extension-matrix.config.ts", env: {}, pnpmArgs: [] },
+        { config: "test/vitest/vitest.extension-browser.config.ts", env: {}, pnpmArgs: [] },
       ],
       { cwd: "/repo", env: {} },
     );
@@ -4498,7 +4413,7 @@ describe("scripts/test-projects parallel cache paths", () => {
           "/repo",
           "node_modules",
           ".experimental-vitest-cache",
-          "1-test-vitest-vitest.extension-matrix.config.ts",
+          "1-test-vitest-vitest.extension-browser.config.ts",
         ),
       },
     ]);
@@ -4557,7 +4472,7 @@ describe("scripts/test-projects Vitest stall watchdog", () => {
     const [spec] = applyDefaultVitestNoOutputTimeout(
       [
         {
-          config: "test/vitest/vitest.extension-feishu.config.ts",
+          config: "test/vitest/vitest.extension-browser.config.ts",
           env: { PATH: "/usr/bin" },
           includeFilePath: null,
           includePatterns: null,
@@ -4604,7 +4519,7 @@ describe("scripts/test-projects Vitest stall watchdog", () => {
           watchMode: false,
         },
         {
-          config: "test/vitest/vitest.extension-feishu.config.ts",
+          config: "test/vitest/vitest.extension-browser.config.ts",
           env: { PATH: "/usr/bin" },
           includeFilePath: null,
           includePatterns: null,
@@ -4627,7 +4542,7 @@ describe("scripts/test-projects Vitest stall watchdog", () => {
     const specs = applyDefaultVitestNoOutputTimeout(
       [
         {
-          config: "test/vitest/vitest.extension-feishu.config.ts",
+          config: "test/vitest/vitest.extension-browser.config.ts",
           env: { PATH: "/usr/bin" },
           includeFilePath: null,
           includePatterns: null,

@@ -18,24 +18,12 @@ import { isBrowserExtensionRoot } from "../test/vitest/vitest.extension-browser-
 import { resolveSplitChannelExtensionShard } from "../test/vitest/vitest.extension-channel-split-paths.mjs";
 import { isCodexExtensionRoot } from "../test/vitest/vitest.extension-codex-paths.mjs";
 import { isDiffsExtensionRoot } from "../test/vitest/vitest.extension-diffs-paths.mjs";
-import { isFeishuExtensionRoot } from "../test/vitest/vitest.extension-feishu-paths.mjs";
-import { isIrcExtensionRoot } from "../test/vitest/vitest.extension-irc-paths.mjs";
-import { isMatrixExtensionRoot } from "../test/vitest/vitest.extension-matrix-paths.mjs";
-import { isMattermostExtensionRoot } from "../test/vitest/vitest.extension-mattermost-paths.mjs";
-import { isMediaExtensionRoot } from "../test/vitest/vitest.extension-media-paths.mjs";
 import { isMemoryExtensionRoot } from "../test/vitest/vitest.extension-memory-paths.mjs";
-import { isMessagingExtensionRoot } from "../test/vitest/vitest.extension-messaging-paths.mjs";
 import { isMiscExtensionRoot } from "../test/vitest/vitest.extension-misc-paths.mjs";
-import { isMsTeamsExtensionRoot } from "../test/vitest/vitest.extension-msteams-paths.mjs";
 import {
   isProviderExtensionRoot,
   isProviderOpenAiExtensionRoot,
 } from "../test/vitest/vitest.extension-provider-paths.mjs";
-import { isQaExtensionRoot } from "../test/vitest/vitest.extension-qa-paths.mjs";
-import { isTelegramExtensionRoot } from "../test/vitest/vitest.extension-telegram-paths.mjs";
-import { isVoiceCallExtensionRoot } from "../test/vitest/vitest.extension-voice-call-paths.mjs";
-import { isWhatsAppExtensionRoot } from "../test/vitest/vitest.extension-whatsapp-paths.mjs";
-import { isZaloExtensionRoot } from "../test/vitest/vitest.extension-zalo-paths.mjs";
 import {
   isPluginSdkLightTarget,
   pluginSdkLightTestFiles,
@@ -116,28 +104,11 @@ const EXTENSION_CODEX_SURFACE_VITEST_CONFIG =
   "test/vitest/vitest.extension-codex-surface.config.ts";
 const EXTENSION_CHANNELS_VITEST_CONFIG = "test/vitest/vitest.extension-channels.config.ts";
 const EXTENSION_DIFFS_VITEST_CONFIG = "test/vitest/vitest.extension-diffs.config.ts";
-const EXTENSION_DISCORD_VITEST_CONFIG = "test/vitest/vitest.extension-discord.config.ts";
-const EXTENSION_FEISHU_VITEST_CONFIG = "test/vitest/vitest.extension-feishu.config.ts";
-const EXTENSION_IMESSAGE_VITEST_CONFIG = "test/vitest/vitest.extension-imessage.config.ts";
-const EXTENSION_IRC_VITEST_CONFIG = "test/vitest/vitest.extension-irc.config.ts";
-const EXTENSION_LINE_VITEST_CONFIG = "test/vitest/vitest.extension-line.config.ts";
-const EXTENSION_MATTERMOST_VITEST_CONFIG = "test/vitest/vitest.extension-mattermost.config.ts";
-const EXTENSION_MEDIA_VITEST_CONFIG = "test/vitest/vitest.extension-media.config.ts";
-const EXTENSION_MATRIX_VITEST_CONFIG = "test/vitest/vitest.extension-matrix.config.ts";
 const EXTENSION_MEMORY_VITEST_CONFIG = "test/vitest/vitest.extension-memory.config.ts";
-const EXTENSION_MSTEAMS_VITEST_CONFIG = "test/vitest/vitest.extension-msteams.config.ts";
-const EXTENSION_MESSAGING_VITEST_CONFIG = "test/vitest/vitest.extension-messaging.config.ts";
 const EXTENSION_MISC_VITEST_CONFIG = "test/vitest/vitest.extension-misc.config.ts";
 const EXTENSION_PROVIDER_OPENAI_VITEST_CONFIG =
   "test/vitest/vitest.extension-provider-openai.config.ts";
 const EXTENSION_PROVIDERS_VITEST_CONFIG = "test/vitest/vitest.extension-providers.config.ts";
-const EXTENSION_QA_VITEST_CONFIG = "test/vitest/vitest.extension-qa.config.ts";
-const EXTENSION_SIGNAL_VITEST_CONFIG = "test/vitest/vitest.extension-signal.config.ts";
-const EXTENSION_SLACK_VITEST_CONFIG = "test/vitest/vitest.extension-slack.config.ts";
-const EXTENSION_TELEGRAM_VITEST_CONFIG = "test/vitest/vitest.extension-telegram.config.ts";
-const EXTENSION_VOICE_CALL_VITEST_CONFIG = "test/vitest/vitest.extension-voice-call.config.ts";
-const EXTENSION_WHATSAPP_VITEST_CONFIG = "test/vitest/vitest.extension-whatsapp.config.ts";
-const EXTENSION_ZALO_VITEST_CONFIG = "test/vitest/vitest.extension-zalo.config.ts";
 const EXTENSIONS_VITEST_CONFIG = "test/vitest/vitest.extensions.config.ts";
 const FULL_EXTENSIONS_VITEST_CONFIG = "test/vitest/vitest.full-extensions.config.ts";
 const GATEWAY_CLIENT_VITEST_CONFIG = "test/vitest/vitest.gateway-client.config.ts";
@@ -180,7 +151,6 @@ const FULL_SUITE_CONFIG_WEIGHT = new Map([
   [EXTENSION_CODEX_APP_SERVER_TOOLS_VITEST_CONFIG, 78],
   [EXTENSION_CODEX_APP_SERVER_SUPPORT_VITEST_CONFIG, 72],
   [EXTENSION_CODEX_SURFACE_VITEST_CONFIG, 68],
-  [EXTENSION_VOICE_CALL_VITEST_CONFIG, 169],
   [EXTENSIONS_VITEST_CONFIG, 168],
   [EXTENSION_PROVIDER_OPENAI_VITEST_CONFIG, 167],
   ["test/vitest/vitest.runtime-config.config.ts", 166],
@@ -198,17 +168,12 @@ const FULL_SUITE_CONFIG_WEIGHT = new Map([
   [CRON_VITEST_CONFIG, 135],
   ["test/vitest/vitest.wizard.config.ts", 130],
   [UNIT_SRC_VITEST_CONFIG, 125],
-  [EXTENSION_MATRIX_VITEST_CONFIG, 100],
-  [EXTENSION_DISCORD_VITEST_CONFIG, 98],
   [EXTENSION_PROVIDERS_VITEST_CONFIG, 96],
-  [EXTENSION_TELEGRAM_VITEST_CONFIG, 94],
-  [EXTENSION_WHATSAPP_VITEST_CONFIG, 92],
   [AUTO_REPLY_CORE_VITEST_CONFIG, 90],
   [CLI_VITEST_CONFIG, 86],
   [MEDIA_VITEST_CONFIG, 84],
   [PLUGINS_VITEST_CONFIG, 82],
   [BUNDLED_VITEST_CONFIG, 80],
-  [EXTENSION_SLACK_VITEST_CONFIG, 78],
   [COMMANDS_LIGHT_VITEST_CONFIG, 48],
   [PLUGIN_SDK_VITEST_CONFIG, 46],
   [AUTO_REPLY_TOP_LEVEL_VITEST_CONFIG, 45],
@@ -220,19 +185,10 @@ const FULL_SUITE_CONFIG_WEIGHT = new Map([
   ["test/vitest/vitest.tooling-isolated.config.ts", 1],
   [UNIT_SECURITY_VITEST_CONFIG, 30],
   [UNIT_SUPPORT_VITEST_CONFIG, 28],
-  [EXTENSION_ZALO_VITEST_CONFIG, 24],
-  [EXTENSION_IRC_VITEST_CONFIG, 20],
-  [EXTENSION_FEISHU_VITEST_CONFIG, 18],
-  [EXTENSION_MATTERMOST_VITEST_CONFIG, 16],
-  [EXTENSION_MESSAGING_VITEST_CONFIG, 14],
-  [EXTENSION_IMESSAGE_VITEST_CONFIG, 13],
-  [EXTENSION_LINE_VITEST_CONFIG, 12],
-  [EXTENSION_SIGNAL_VITEST_CONFIG, 11],
   [EXTENSION_ACPX_VITEST_CONFIG, 10],
   [EXTENSION_DIFFS_VITEST_CONFIG, 8],
   [EXTENSION_ACTIVE_MEMORY_VITEST_CONFIG, 7],
   [EXTENSION_MEMORY_VITEST_CONFIG, 6],
-  [EXTENSION_MSTEAMS_VITEST_CONFIG, 4],
 ]);
 
 function resolveConfigSortWeight(config, shardTimings) {
@@ -338,27 +294,10 @@ const VITEST_CONFIG_BY_KIND = {
   extensionChannel: EXTENSION_CHANNELS_VITEST_CONFIG,
   extensionCodex: EXTENSION_CODEX_VITEST_CONFIG,
   extensionDiffs: EXTENSION_DIFFS_VITEST_CONFIG,
-  extensionDiscord: EXTENSION_DISCORD_VITEST_CONFIG,
-  extensionFeishu: EXTENSION_FEISHU_VITEST_CONFIG,
-  extensionImessage: EXTENSION_IMESSAGE_VITEST_CONFIG,
-  extensionIrc: EXTENSION_IRC_VITEST_CONFIG,
-  extensionLine: EXTENSION_LINE_VITEST_CONFIG,
-  extensionMatrix: EXTENSION_MATRIX_VITEST_CONFIG,
-  extensionMattermost: EXTENSION_MATTERMOST_VITEST_CONFIG,
-  extensionMedia: EXTENSION_MEDIA_VITEST_CONFIG,
   extensionMemory: EXTENSION_MEMORY_VITEST_CONFIG,
-  extensionMessaging: EXTENSION_MESSAGING_VITEST_CONFIG,
   extensionMisc: EXTENSION_MISC_VITEST_CONFIG,
-  extensionMsTeams: EXTENSION_MSTEAMS_VITEST_CONFIG,
   extensionProviderOpenAi: EXTENSION_PROVIDER_OPENAI_VITEST_CONFIG,
   extensionProvider: EXTENSION_PROVIDERS_VITEST_CONFIG,
-  extensionQa: EXTENSION_QA_VITEST_CONFIG,
-  extensionSignal: EXTENSION_SIGNAL_VITEST_CONFIG,
-  extensionSlack: EXTENSION_SLACK_VITEST_CONFIG,
-  extensionTelegram: EXTENSION_TELEGRAM_VITEST_CONFIG,
-  extensionVoiceCall: EXTENSION_VOICE_CALL_VITEST_CONFIG,
-  extensionWhatsApp: EXTENSION_WHATSAPP_VITEST_CONFIG,
-  extensionZalo: EXTENSION_ZALO_VITEST_CONFIG,
   gatewayClient: GATEWAY_CLIENT_VITEST_CONFIG,
   gatewayCore: GATEWAY_CORE_VITEST_CONFIG,
   gatewayMethods: GATEWAY_METHODS_VITEST_CONFIG,
@@ -2003,8 +1942,6 @@ const GROUP_VISIBLE_REPLY_TEST_TARGETS = [
   "src/auto-reply/reply/dispatch-from-config.test.ts",
   "src/auto-reply/reply/followup-runner.test.ts",
   "src/auto-reply/reply/groups.test.ts",
-  "extensions/discord/src/monitor/message-handler.process.test.ts",
-  "extensions/slack/src/monitor.tool-result.test.ts",
 ];
 const GROUP_VISIBLE_REPLY_PROMPT_TEST_TARGETS = [
   "src/agents/system-prompt.test.ts",
@@ -2059,34 +1996,13 @@ const SOURCE_TEST_TARGETS = new Map([
   ["ui/config/control-ui-chunking.ts", ["ui/src/ui/control-ui-chunking.test.ts"]],
   [
     "src/plugin-sdk/test-helpers/directory-ids.ts",
-    [
-      "extensions/discord/src/directory-contract.test.ts",
-      "extensions/slack/src/directory-contract.test.ts",
-      "extensions/telegram/src/directory-contract.test.ts",
-    ],
+    ["src/channels/plugins/contracts/registry.contract.test.ts"],
   ],
   [
     "src/plugin-sdk/channel-reply-pipeline.ts",
     ["src/plugins/contracts/plugin-sdk-subpaths.test.ts", ...GROUP_VISIBLE_REPLY_TEST_TARGETS],
   ],
   ["src/plugin-sdk/reply-runtime.ts", ["src/plugins/contracts/plugin-sdk-subpaths.test.ts"]],
-  ["extensions/google-meet/index.ts", ["extensions/google-meet/index.test.ts"]],
-  ["extensions/google-meet/src/cli.ts", ["extensions/google-meet/src/cli.test.ts"]],
-  ["extensions/google-meet/src/create.ts", ["extensions/google-meet/index.test.ts"]],
-  ["extensions/google-meet/src/oauth.ts", ["extensions/google-meet/src/oauth.test.ts"]],
-  [
-    "extensions/discord/src/monitor/message-handler.ts",
-    [
-      "extensions/discord/src/channel-actions.contract.test.ts",
-      "extensions/discord/src/channel.message-adapter.test.ts",
-      "extensions/discord/src/channel.test.ts",
-      "extensions/discord/src/durable-delivery.test.ts",
-      "extensions/discord/src/monitor/message-handler.bot-self-filter.test.ts",
-      "extensions/discord/src/monitor/message-handler.queue.test.ts",
-      "extensions/discord/src/monitor/provider.skill-dedupe.test.ts",
-      "extensions/discord/src/monitor/provider.test.ts",
-    ],
-  ],
   ["src/commands/doctor-memory-search.ts", ["src/commands/doctor-memory-search.test.ts"]],
   [
     "src/commitments/model-selection.runtime.ts",
@@ -3467,9 +3383,6 @@ function classifyTarget(arg, cwd) {
     if (isProviderOpenAiExtensionRoot(extensionRoot)) {
       return "extensionProviderOpenAi";
     }
-    if (isQaExtensionRoot(extensionRoot)) {
-      return "extensionQa";
-    }
     if (isChannelSurfaceTestFile(relative)) {
       return "extensionChannel";
     }
@@ -3488,41 +3401,8 @@ function classifyTarget(arg, cwd) {
     if (isBrowserExtensionRoot(extensionRoot)) {
       return "extensionBrowser";
     }
-    if (isFeishuExtensionRoot(extensionRoot)) {
-      return "extensionFeishu";
-    }
-    if (isIrcExtensionRoot(extensionRoot)) {
-      return "extensionIrc";
-    }
-    if (isMattermostExtensionRoot(extensionRoot)) {
-      return "extensionMattermost";
-    }
-    if (isTelegramExtensionRoot(extensionRoot)) {
-      return "extensionTelegram";
-    }
-    if (isVoiceCallExtensionRoot(extensionRoot)) {
-      return "extensionVoiceCall";
-    }
-    if (isWhatsAppExtensionRoot(extensionRoot)) {
-      return "extensionWhatsApp";
-    }
-    if (isZaloExtensionRoot(extensionRoot)) {
-      return "extensionZalo";
-    }
-    if (isMatrixExtensionRoot(extensionRoot)) {
-      return "extensionMatrix";
-    }
-    if (isMediaExtensionRoot(extensionRoot)) {
-      return "extensionMedia";
-    }
     if (isMemoryExtensionRoot(extensionRoot)) {
       return "extensionMemory";
-    }
-    if (isMsTeamsExtensionRoot(extensionRoot)) {
-      return "extensionMsTeams";
-    }
-    if (isMessagingExtensionRoot(extensionRoot)) {
-      return "extensionMessaging";
     }
     if (isMiscExtensionRoot(extensionRoot)) {
       return "extensionMisc";
@@ -3873,28 +3753,11 @@ export function buildVitestRunPlans(
     "extensionCodex",
     "extensionDiffs",
     "extensionBrowser",
-    "extensionDiscord",
-    "extensionFeishu",
-    "extensionImessage",
-    "extensionIrc",
-    "extensionLine",
-    "extensionMattermost",
     "extensionChannel",
-    "extensionTelegram",
-    "extensionVoiceCall",
-    "extensionWhatsApp",
-    "extensionZalo",
-    "extensionMatrix",
-    "extensionMedia",
     "extensionMemory",
     "extensionMisc",
-    "extensionMsTeams",
-    "extensionMessaging",
     "extensionProviderOpenAi",
     "extensionProvider",
-    "extensionQa",
-    "extensionSignal",
-    "extensionSlack",
     "extensionFull",
     "channel",
     "extension",

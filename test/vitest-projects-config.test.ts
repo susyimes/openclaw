@@ -70,16 +70,12 @@ describe("projects vitest config", () => {
     expect(extensionShard?.projects).toEqual(
       expect.arrayContaining([
         "test/vitest/vitest.extension-browser.config.ts",
-        "test/vitest/vitest.extension-qa.config.ts",
-        "test/vitest/vitest.extension-media.config.ts",
         "test/vitest/vitest.extension-misc.config.ts",
       ]),
     );
     expect(rootVitestProjects).toEqual(
       expect.arrayContaining([
         "test/vitest/vitest.extension-browser.config.ts",
-        "test/vitest/vitest.extension-qa.config.ts",
-        "test/vitest/vitest.extension-media.config.ts",
         "test/vitest/vitest.extension-misc.config.ts",
       ]),
     );
@@ -91,11 +87,13 @@ describe("projects vitest config", () => {
     );
 
     expect(toolingShard?.projects).toEqual(
-      expect.arrayContaining(["test/vitest/vitest.tooling-docker.config.ts"]),
+      expect.arrayContaining([
+        "test/vitest/vitest.tooling.config.ts",
+        "test/vitest/vitest.tooling-isolated.config.ts",
+      ]),
     );
-    expect(rootVitestProjects).toEqual(
-      expect.arrayContaining(["test/vitest/vitest.tooling-docker.config.ts"]),
-    );
+    expect(toolingShard?.projects).not.toContain("test/vitest/vitest.tooling-docker.config.ts");
+    expect(rootVitestProjects).not.toContain("test/vitest/vitest.tooling-docker.config.ts");
   });
 
   it("disables vite env-file loading for vitest lanes", () => {

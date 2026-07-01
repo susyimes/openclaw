@@ -752,11 +752,6 @@ const SPLIT_NODE_SHARDS = new Map([
         ],
         requiresDist: false,
       },
-      {
-        shardName: "core-tooling-docker",
-        configs: ["test/vitest/vitest.tooling-docker.config.ts"],
-        requiresDist: false,
-      },
     ],
   ],
   [
