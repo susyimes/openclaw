@@ -164,12 +164,24 @@ function collectBundledPluginCandidates(cwd, extensionsRoot) {
   const trackedFiles = collectTrackedBundledPluginFiles(cwd);
   if (trackedFiles) {
     return [...trackedFiles.entries()]
-      .map(([dirName, relativeFiles]) => ({
-        dirName,
-        pluginDir: path.join(extensionsRoot, dirName),
-        relativeFiles,
-        topLevelPublicSurfaceEntries: collectTopLevelPublicSurfaceEntriesFromFiles(relativeFiles),
-      }))
+      .flatMap(([dirName, relativeFiles]) => {
+        const pluginDir = path.join(extensionsRoot, dirName);
+        const existingRelativeFiles = relativeFiles.filter((relativeFile) =>
+          fs.existsSync(path.join(pluginDir, relativeFile)),
+        );
+        if (existingRelativeFiles.length === 0) {
+          return [];
+        }
+        return [
+          {
+            dirName,
+            pluginDir,
+            relativeFiles: existingRelativeFiles,
+            topLevelPublicSurfaceEntries:
+              collectTopLevelPublicSurfaceEntriesFromFiles(existingRelativeFiles),
+          },
+        ];
+      })
       .toSorted((left, right) => left.dirName.localeCompare(right.dirName));
   }
 

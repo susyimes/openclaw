@@ -112,11 +112,7 @@ export const migratedSessionAccessorFiles = new Set([
   "src/tui/embedded-backend.ts",
 ]);
 
-export const migratedBundledPluginSessionAccessorFiles = new Set([
-  "extensions/discord/src/monitor/native-command-model-picker-apply.ts",
-  "extensions/discord/src/monitor/thread-session-close.ts",
-  "extensions/telegram/src/bot-handlers.runtime.ts",
-]);
+export const migratedBundledPluginSessionAccessorFiles = new Set([]);
 
 export const migratedSessionAccessorWriteFiles = new Set([
   "src/agents/command/attempt-execution.shared.ts",
@@ -426,8 +422,6 @@ export function findSessionLifecycleCleanupBoundaryViolations(content, fileName 
 export async function main() {
   const repoRoot = resolveRepoRoot(import.meta.url);
   const readSourceRoots = resolveSourceRoots(repoRoot, [
-    "extensions/discord/src/monitor",
-    "extensions/telegram/src",
     "src/agents",
     "src/auto-reply",
     "src/commands",

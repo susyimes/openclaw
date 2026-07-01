@@ -17,7 +17,7 @@ const CORE_SPARSE_ROOTS = ["packages", "ui/config", "ui/src"];
 
 const CORE_PROD_REQUIRED_PATHS = [
   {
-    path: "apps/shared/OpenClawKit/Sources/OpenClawKit/Resources/tool-display.json",
+    path: "ui/src/ui/tool-display.shared.json",
     whenPresent: "ui/src/ui/tool-display.ts",
   },
   {

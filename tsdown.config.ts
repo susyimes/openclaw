@@ -190,6 +190,17 @@ const bundledHookEntries = buildBundledHookEntries();
 const bundledPluginRoot = (pluginId: string) => ["extensions", pluginId].join("/");
 const bundledPluginFile = (pluginId: string, relativePath: string) =>
   `${bundledPluginRoot(pluginId)}/${relativePath}`;
+function buildExistingBundledPluginCoreEntries(
+  entries: Array<{ key: string; pluginId: string; relativePath: string }>,
+): Record<string, string> {
+  return Object.fromEntries(
+    entries.flatMap(({ key, pluginId, relativePath }) => {
+      const sourcePath = bundledPluginFile(pluginId, relativePath);
+      return fs.existsSync(path.join(process.cwd(), sourcePath)) ? [[key, sourcePath]] : [];
+    }),
+  );
+}
+
 const explicitNeverBundleDependencies = [
   "@anthropic-ai/vertex-sdk",
   "@slack/bolt",
@@ -287,12 +298,15 @@ function buildCoreDistEntries(): Record<string, string> {
     "facade-activation-check.runtime": "src/plugin-sdk/facade-activation-check.runtime.ts",
     extensionAPI: "src/extensionAPI.ts",
     "infra/warning-filter": "src/infra/warning-filter.ts",
-    "telegram-ingress-worker.runtime": bundledPluginFile(
-      "telegram",
-      "src/telegram-ingress-worker.runtime.ts",
-    ),
-    "telegram/audit": bundledPluginFile("telegram", "src/audit.ts"),
-    "telegram/token": bundledPluginFile("telegram", "src/token.ts"),
+    ...buildExistingBundledPluginCoreEntries([
+      {
+        key: "telegram-ingress-worker.runtime",
+        pluginId: "telegram",
+        relativePath: "src/telegram-ingress-worker.runtime.ts",
+      },
+      { key: "telegram/audit", pluginId: "telegram", relativePath: "src/audit.ts" },
+      { key: "telegram/token", pluginId: "telegram", relativePath: "src/token.ts" },
+    ]),
     "plugins/build-smoke-entry": "src/plugins/build-smoke-entry.ts",
     "plugins/runtime/index": "src/plugins/runtime/index.ts",
     "llm-slug-generator": "src/hooks/llm-slug-generator.ts",
