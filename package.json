@@ -1,6 +1,6 @@
 {
   "name": "openclaw",
-  "version": "2026.6.9",
+  "version": "2026.6.11",
   "description": "Multi-channel AI gateway with extensible messaging integrations",
   "keywords": [],
   "homepage": "https://github.com/openclaw/openclaw#readme",
@@ -1405,7 +1405,15 @@
       "default": "./dist/plugin-sdk/llm.js"
     },
     "./extension-api": "./dist/extensionAPI.js",
-    "./cli-entry": "./openclaw.mjs"
+    "./cli-entry": "./openclaw.mjs",
+    "./plugin-sdk/agent-harness-tool-runtime": {
+      "types": "./dist/plugin-sdk/agent-harness-tool-runtime.d.ts",
+      "default": "./dist/plugin-sdk/agent-harness-tool-runtime.js"
+    },
+    "./plugin-sdk/session-transcript-runtime": {
+      "types": "./dist/plugin-sdk/session-transcript-runtime.d.ts",
+      "default": "./dist/plugin-sdk/session-transcript-runtime.js"
+    }
   },
   "scripts": {
     "audit:seams": "node scripts/audit-seams.mjs",
