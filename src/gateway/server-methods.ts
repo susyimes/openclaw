@@ -150,6 +150,10 @@ const loadPluginHostHookHandlers = lazyHandlerModule(
   () => import("./server-methods/plugin-host-hooks.js"),
   (module) => module.pluginHostHookHandlers,
 );
+const loadProjectionReviewHandlers = lazyHandlerModule(
+  () => import("./server-methods/projection-review.js"),
+  (module) => module.projectionReviewHandlers,
+);
 const loadPushHandlers = lazyHandlerModule(
   () => import("./server-methods/push.js"),
   (module) => module.pushHandlers,
@@ -423,6 +427,10 @@ export const coreGatewayHandlers: GatewayRequestHandlers = {
   ...createLazyCoreHandlers({
     methods: ["tasks.list", "tasks.get", "tasks.cancel"],
     loadHandlers: loadTasksHandlers,
+  }),
+  ...createLazyCoreHandlers({
+    methods: ["projection.review.list", "projection.review.feedback"],
+    loadHandlers: loadProjectionReviewHandlers,
   }),
   ...createLazyCoreHandlers({
     methods: ["tools.catalog"],

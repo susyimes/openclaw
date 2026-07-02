@@ -34,6 +34,7 @@ const mocks = vi.hoisted(() => ({
   loadDreamingStatusMock: vi.fn(async () => {}),
   loadWikiImportInsightsMock: vi.fn(async () => {}),
   loadWikiMemoryPalaceMock: vi.fn(async () => {}),
+  refreshPendingApprovalQueueMock: vi.fn(async () => {}),
   loadExecApprovalsMock: vi.fn(async () => {}),
   loadLogsMock: vi.fn(async () => {}),
   loadModelAuthStatusStateMock: vi.fn(async () => {}),
@@ -105,6 +106,9 @@ vi.mock("./controllers/dreaming.ts", () => ({
   loadDreamingStatus: mocks.loadDreamingStatusMock,
   loadWikiImportInsights: mocks.loadWikiImportInsightsMock,
   loadWikiMemoryPalace: mocks.loadWikiMemoryPalaceMock,
+}));
+vi.mock("./controllers/exec-approval.ts", () => ({
+  refreshPendingApprovalQueue: mocks.refreshPendingApprovalQueueMock,
 }));
 vi.mock("./controllers/exec-approvals.ts", () => ({
   loadExecApprovals: mocks.loadExecApprovalsMock,
@@ -306,6 +310,15 @@ describe("refreshActiveTab", () => {
     expect(host.logsAtBottom).toBe(true);
     expect(mocks.loadLogsMock).toHaveBeenCalledWith(host, { reset: true });
     expect(mocks.scheduleLogsScrollMock).toHaveBeenCalledWith(host, true);
+  });
+
+  it("refreshes the Review tab through the inline approval queue", async () => {
+    const host = createHost();
+    host.tab = "review";
+
+    await refreshActiveTab(host as never);
+
+    expect(mocks.refreshPendingApprovalQueueMock).toHaveBeenCalledWith(host);
   });
 
   it("records tab visible timing without waiting for the tab refresh RPC", async () => {

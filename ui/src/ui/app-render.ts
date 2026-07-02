@@ -114,6 +114,13 @@ import {
   updateDreamingEnabled,
 } from "./controllers/dreaming.ts";
 import {
+  dismissExecApprovalPrompt,
+  isStaleApprovalResolutionError,
+  refreshPendingApprovalQueue,
+  type ExecApprovalDecision,
+  type ExecApprovalRequest,
+} from "./controllers/exec-approval.ts";
+import {
   loadExecApprovals,
   removeExecApprovalsFormValue,
   saveExecApprovals,
@@ -122,6 +129,11 @@ import {
 import { loadLogs } from "./controllers/logs.ts";
 import { loadNodes } from "./controllers/nodes.ts";
 import { loadPresence } from "./controllers/presence.ts";
+import {
+  buildProjectionFeedbackText,
+  loadProjectionReview,
+  sendProjectionReviewFeedback,
+} from "./controllers/projection-review.ts";
 import {
   branchSessionFromCheckpoint,
   createSessionAndRefresh,
@@ -678,6 +690,7 @@ const lazyDebug = createLazyView(() => import("./views/debug.ts"), notifyLazyVie
 const lazyInstances = createLazyView(() => import("./views/instances.ts"), notifyLazyViewChanged);
 const lazyLogs = createLazyView(() => import("./views/logs.ts"), notifyLazyViewChanged);
 const lazyNodes = createLazyView(() => import("./views/nodes.ts"), notifyLazyViewChanged);
+const lazyReview = createLazyView(() => import("./views/review.ts"), notifyLazyViewChanged);
 const lazySessions = createLazyView(() => import("./views/sessions.ts"), notifyLazyViewChanged);
 const lazySkillWorkshop = createLazyView(
   () => import("./views/skill-workshop.ts"),
@@ -686,6 +699,78 @@ const lazySkillWorkshop = createLazyView(
 const lazySkills = createLazyView(() => import("./views/skills.ts"), notifyLazyViewChanged);
 const lazyUsage = createLazyView(() => import("./views/usage.ts"), notifyLazyViewChanged);
 const lazyWorkboard = createLazyView(() => import("./views/workboard.ts"), notifyLazyViewChanged);
+
+async function resolveReviewApproval(
+  state: AppViewState,
+  entry: ExecApprovalRequest,
+  decision: ExecApprovalDecision,
+): Promise<void> {
+  if (!state.client || state.execApprovalBusy) {
+    return;
+  }
+  state.execApprovalBusy = true;
+  state.execApprovalError = null;
+  try {
+    const method = entry.kind === "plugin" ? "plugin.approval.resolve" : "exec.approval.resolve";
+    await state.client.request(method, { id: entry.id, decision });
+    dismissExecApprovalPrompt(state, entry.id);
+  } catch (err) {
+    if (isStaleApprovalResolutionError(err)) {
+      dismissExecApprovalPrompt(state, entry.id);
+      await refreshPendingApprovalQueue(state);
+      return;
+    }
+    state.execApprovalError = `Approval failed: ${String(err)}`;
+  } finally {
+    state.execApprovalBusy = false;
+  }
+}
+
+async function sendReviewFeedback(
+  state: AppViewState,
+  target: { kind: string; id: string; title: string },
+  feedback: string,
+  comment: string,
+): Promise<void> {
+  if (!state.client || state.reviewFeedbackBusyId) {
+    return;
+  }
+  const targetId = `${target.kind}:${target.id}`;
+  state.reviewFeedbackBusyId = targetId;
+  state.reviewFeedbackMessage = null;
+  const trimmedComment = comment.trim();
+  const text = [
+    "Review feedback",
+    `target=${target.kind}:${target.id}`,
+    `title=${target.title}`,
+    `feedback=${feedback}`,
+    trimmedComment ? `comment=${trimmedComment}` : null,
+  ]
+    .filter(Boolean)
+    .join(" | ");
+  try {
+    await state.client.request("system-event", {
+      text,
+      reason: "review-feedback",
+      tags: ["review-feedback", target.kind, feedback],
+    });
+    state.reviewFeedbackMessage = {
+      kind: "success",
+      text: "Feedback recorded.",
+    };
+    state.reviewCommentDrafts = {
+      ...state.reviewCommentDrafts,
+      [targetId]: "",
+    };
+  } catch (err) {
+    state.reviewFeedbackMessage = {
+      kind: "error",
+      text: `Feedback failed: ${String(err)}`,
+    };
+  } finally {
+    state.reviewFeedbackBusyId = null;
+  }
+}
 
 type ChatWorkspaceFilesState = {
   activeId: string | null;
@@ -2825,6 +2910,52 @@ export function renderApp(state: AppViewState) {
                   state.activityExpandedIds = next;
                 },
                 onScroll: (event) => state.handleActivityScroll(event),
+              }),
+            )
+          : nothing}
+        ${state.tab === "review"
+          ? renderLazyView(lazyReview, (m) =>
+              m.renderReview({
+                approvals: state.execApprovalQueue,
+                events: state.eventLog,
+                projection: state.projectionReviewResult,
+                projectionLoading: state.projectionReviewLoading,
+                projectionError: state.projectionReviewError,
+                comments: state.reviewCommentDrafts,
+                approvalBusy: state.execApprovalBusy,
+                feedbackBusyId: state.reviewFeedbackBusyId,
+                feedbackMessage: state.reviewFeedbackMessage,
+                onRefreshApprovals: () =>
+                  void Promise.all([
+                    refreshPendingApprovalQueue(state),
+                    loadProjectionReview(state),
+                  ]),
+                onRefreshProjection: () => void loadProjectionReview(state),
+                onApprovalDecision: (entry, decision) =>
+                  void resolveReviewApproval(state, entry, decision),
+                onCommentChange: (id, comment) => {
+                  state.reviewCommentDrafts = {
+                    ...state.reviewCommentDrafts,
+                    [id]: comment,
+                  };
+                },
+                onFeedback: (target, feedback, comment) =>
+                  void sendReviewFeedback(state, target, feedback, comment),
+                onProjectionFeedback: (card, feedback, comment, commentId) => {
+                  const feedbackText = buildProjectionFeedbackText({
+                    phrase: feedback.phrase,
+                    score: feedback.score,
+                    comment,
+                  });
+                  if (!feedbackText) {
+                    return;
+                  }
+                  void sendProjectionReviewFeedback(state, {
+                    cardId: card.id,
+                    feedbackText,
+                    commentId,
+                  });
+                },
               }),
             )
           : nothing}

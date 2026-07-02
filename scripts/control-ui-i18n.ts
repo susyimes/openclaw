@@ -1222,13 +1222,30 @@ export async function runProcess(
 }
 
 async function formatGeneratedTypeScript(filePath: string, source: string): Promise<string> {
-  const directFormatterPath = path.join(ROOT, "node_modules", ".bin", "oxfmt");
+  const directFormatterPath = path.join(
+    ROOT,
+    "node_modules",
+    ".bin",
+    process.platform === "win32" ? "oxfmt.cmd" : "oxfmt",
+  );
+  const relativeFilePath = path.relative(ROOT, filePath);
+  if (process.platform === "win32" && existsSync(directFormatterPath)) {
+    const result = await runProcess(
+      process.env.ComSpec ?? "cmd.exe",
+      ["/d", "/s", "/c", "call", directFormatterPath, "--stdin-filepath", relativeFilePath],
+      {
+        input: source,
+        rejectOnFailure: true,
+      },
+    );
+    return restoreReplacementCorruptedStringLiterals(source, result.stdout);
+  }
   const formatterCommand =
     process.platform !== "win32" && existsSync(directFormatterPath) ? directFormatterPath : "pnpm";
   const formatterArgs =
     formatterCommand === directFormatterPath
-      ? ["--stdin-filepath", path.relative(ROOT, filePath)]
-      : ["exec", "oxfmt", "--stdin-filepath", path.relative(ROOT, filePath)];
+      ? ["--stdin-filepath", relativeFilePath]
+      : ["exec", "oxfmt", "--stdin-filepath", relativeFilePath];
   const result = await runProcess(formatterCommand, formatterArgs, {
     input: source,
     rejectOnFailure: true,

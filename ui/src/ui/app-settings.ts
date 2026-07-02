@@ -44,6 +44,10 @@ import {
   loadWikiMemoryPalace,
   type DreamingState,
 } from "./controllers/dreaming.ts";
+import {
+  refreshPendingApprovalQueue,
+  type ExecApprovalPromptState,
+} from "./controllers/exec-approval.ts";
 import { loadExecApprovals, type ExecApprovalsState } from "./controllers/exec-approvals.ts";
 import { loadLogs, type LogsState } from "./controllers/logs.ts";
 import {
@@ -52,6 +56,10 @@ import {
 } from "./controllers/model-auth-status.ts";
 import { loadNodes, type NodesState } from "./controllers/nodes.ts";
 import { loadPresence, type PresenceState } from "./controllers/presence.ts";
+import {
+  loadProjectionReview,
+  type ProjectionReviewState,
+} from "./controllers/projection-review.ts";
 import { loadSessions, type SessionsState } from "./controllers/sessions.ts";
 import {
   loadSkillWorkshopProposals,
@@ -155,7 +163,9 @@ type SettingsAppHost = SettingsHost &
   DebugState &
   DevicesState &
   DreamingState &
+  ExecApprovalPromptState &
   ExecApprovalsState &
+  ProjectionReviewState &
   LogsState &
   NodesState &
   PresenceState &
@@ -443,6 +453,9 @@ export async function refreshActiveTab(host: SettingsHost, opts?: { chatStartup?
         await loadOverview(host);
         break;
       case "activity":
+        break;
+      case "review":
+        await Promise.all([refreshPendingApprovalQueue(app), loadProjectionReview(app)]);
         break;
       case "workboard":
         await Promise.all([
