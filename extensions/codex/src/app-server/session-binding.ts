@@ -587,9 +587,11 @@ function isOpenAiAuthProvider(params: {
 }
 
 function readApprovalPolicy(value: unknown): CodexAppServerApprovalPolicy | undefined {
+  if (value === "on-failure") {
+    return "on-request";
+  }
   return value === "never" ||
     value === "on-request" ||
-    value === "on-failure" ||
     value === "untrusted"
     ? value
     : undefined;

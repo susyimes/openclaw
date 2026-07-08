@@ -88,6 +88,29 @@ describe("codex app-server session binding", () => {
     expect(bindingStat.isFile()).toBe(true);
   });
 
+  it("normalizes the retired approval policy in persisted bindings", async () => {
+    const sessionFile = path.join(tempDir, "session.json");
+    await fs.writeFile(
+      resolveCodexAppServerBindingPath(sessionFile),
+      JSON.stringify({
+        schemaVersion: 2,
+        threadId: "thread-legacy-policy",
+        cwd: tempDir,
+        approvalPolicy: "on-failure",
+        sandbox: "workspace-write",
+        createdAt: "2026-01-01T00:00:00.000Z",
+        updatedAt: "2026-01-01T00:00:00.000Z",
+      }),
+    );
+
+    await expect(readCodexAppServerBinding(sessionFile)).resolves.toMatchObject({
+      threadId: "thread-legacy-policy",
+      cwd: tempDir,
+      approvalPolicy: "on-request",
+      sandbox: "workspace-write",
+    });
+  });
+
   it("round-trips plugin app policy context with app ids as record keys", async () => {
     const sessionFile = path.join(tempDir, "session.json");
     const pluginAppPolicyContext = {
