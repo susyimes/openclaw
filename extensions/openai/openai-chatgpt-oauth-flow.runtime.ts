@@ -175,11 +175,12 @@ async function postTokenForm(
     },
     timeoutMs,
     signal: options.signal,
+    requireHttps: true,
     policy: {
       // Trusted fixed OAuth origin. Clash/sing-box/Surge fake-IP DNS commonly maps
       // this public hostname into RFC 2544 or IPv6 ULA ranges; keep the exemption
-      // scoped to this exact HTTPS origin instead of relaxing global SSRF policy.
-      allowedOrigins: ["https://auth.openai.com"],
+      // scoped to this hostname instead of relaxing global SSRF policy.
+      hostnameAllowlist: ["auth.openai.com"],
       allowRfc2544BenchmarkRange: true,
       allowIpv6UniqueLocalRange: true,
     },

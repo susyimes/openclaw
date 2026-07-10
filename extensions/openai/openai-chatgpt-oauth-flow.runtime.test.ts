@@ -98,8 +98,9 @@ describe("OpenAI Codex OAuth flow", () => {
     expect(ssrfMocks.fetchWithSsrFGuard).toHaveBeenCalledWith(
       expect.objectContaining({
         auditContext: "openai-chatgpt-oauth-token",
+        requireHttps: true,
         policy: {
-          allowedOrigins: ["https://auth.openai.com"],
+          hostnameAllowlist: ["auth.openai.com"],
           allowRfc2544BenchmarkRange: true,
           allowIpv6UniqueLocalRange: true,
         },
@@ -156,8 +157,9 @@ describe("OpenAI Codex OAuth flow", () => {
     expect(ssrfMocks.fetchWithSsrFGuard).toHaveBeenCalledWith(
       expect.objectContaining({
         auditContext: "openai-chatgpt-oauth-token",
+        requireHttps: true,
         policy: {
-          allowedOrigins: ["https://auth.openai.com"],
+          hostnameAllowlist: ["auth.openai.com"],
           allowRfc2544BenchmarkRange: true,
           allowIpv6UniqueLocalRange: true,
         },

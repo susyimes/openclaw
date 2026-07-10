@@ -435,6 +435,60 @@ describe("fetchWithSsrFGuard hardening", () => {
     expect(result.response.status).toBe(200);
   });
 
+  it("allows OAuth fake-IP DNS without allowing private addresses for the trusted hostname", async () => {
+    const fakeIpLookup = vi.fn(async () => [{ address: "198.18.0.25", family: 4 }]) as unknown as LookupFn;
+    const fetchImpl = vi.fn(async () => okResponse());
+    const policy = {
+      hostnameAllowlist: ["auth.openai.com"],
+      allowRfc2544BenchmarkRange: true,
+      allowIpv6UniqueLocalRange: true,
+    };
+
+    const result = await fetchWithSsrFGuard({
+      url: "https://auth.openai.com/oauth/token",
+      fetchImpl,
+      lookupFn: fakeIpLookup,
+      requireHttps: true,
+      policy,
+    });
+    expect(result.response.status).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledOnce();
+    await result.release();
+
+    const privateLookup = vi.fn(async () => [{ address: "192.168.1.25", family: 4 }]) as unknown as LookupFn;
+    await expect(
+      fetchWithSsrFGuard({
+        url: "https://auth.openai.com/oauth/token",
+        fetchImpl: vi.fn(async () => okResponse()),
+        lookupFn: privateLookup,
+        requireHttps: true,
+        policy,
+      }),
+    ).rejects.toThrow(/private|internal|blocked/i);
+  });
+
+  it("blocks OAuth token redirects outside the trusted HTTPS hostname", async () => {
+    const lookupFn = vi.fn(async () => [{ address: "198.18.0.25", family: 4 }]) as unknown as LookupFn;
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(redirectResponse("https://evil.example/oauth/token"));
+
+    await expect(
+      fetchWithSsrFGuard({
+        url: "https://auth.openai.com/oauth/token",
+        fetchImpl,
+        lookupFn,
+        requireHttps: true,
+        policy: {
+          hostnameAllowlist: ["auth.openai.com"],
+          allowRfc2544BenchmarkRange: true,
+          allowIpv6UniqueLocalRange: true,
+        },
+      }),
+    ).rejects.toThrow(/allowlist/i);
+    expect(fetchImpl).toHaveBeenCalledOnce();
+  });
+
   it("fails closed for plain HTTP targets when explicit proxy mode requires pinned DNS", async () => {
     const fetchImpl = vi.fn();
     await expect(
