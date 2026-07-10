@@ -406,6 +406,32 @@ describe("codex provider", () => {
     ).toEqual(["off", "medium", "high", "xhigh"]);
   });
 
+  it.each(["gpt-5.4-pro", "gpt-5.5-pro"])(
+    "keeps the %s minimum effort when discovery metadata is unavailable",
+    (modelId) => {
+      const provider = buildCodexProvider();
+      const model = provider.resolveDynamicModel?.({
+        provider: "codex",
+        modelId,
+        modelRegistry: { find: () => null },
+      } as never);
+
+      expectRecordFields(model, {
+        input: ["text", "image"],
+        compat: {
+          supportsReasoningEffort: true,
+          supportedReasoningEfforts: ["medium", "high", "xhigh"],
+          supportsUsageInStreaming: true,
+        },
+      });
+      expect(
+        provider
+          .resolveThinkingProfile?.({ provider: "codex", modelId } as never)
+          ?.levels.map((level) => level.id),
+      ).toEqual(["off", "medium", "high", "xhigh"]);
+    },
+  );
+
   it("declares synthetic auth because the harness owns Codex credentials", () => {
     const provider = buildCodexProvider();
 

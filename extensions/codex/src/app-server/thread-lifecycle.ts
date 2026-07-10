@@ -14,6 +14,7 @@ import {
   isMaxReasoningCodexModel,
   isModernCodexModel,
   readCodexSupportedReasoningEfforts,
+  resolveCodexFallbackReasoningEfforts,
   resolveCodexSupportedReasoningEffort,
   type CodexReasoningEffort,
 } from "../../provider.js";
@@ -1799,11 +1800,13 @@ export function resolveReasoningEffort(
   if (thinkLevel === "off" || thinkLevel === "adaptive") {
     return null;
   }
-  if (supportedReasoningEfforts) {
+  const effectiveReasoningEfforts =
+    supportedReasoningEfforts ?? resolveCodexFallbackReasoningEfforts(modelId);
+  if (effectiveReasoningEfforts) {
     return (
       resolveCodexSupportedReasoningEffort({
         requested: thinkLevel,
-        supportedReasoningEfforts,
+        supportedReasoningEfforts: effectiveReasoningEfforts,
       }) ?? null
     );
   }

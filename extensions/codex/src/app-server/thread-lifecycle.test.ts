@@ -1344,6 +1344,16 @@ describe("resolveReasoningEffort (#71946)", () => {
       expect(resolveReasoningEffort("medium", "gpt-5.4-pro", supported)).toBe("medium");
       expect(resolveReasoningEffort("max", "gpt-5.4-pro", supported)).toBe("xhigh");
     });
+
+    it.each(["gpt-5.4-pro", "gpt-5.5-pro"])(
+      "uses the known %s minimum effort without discovery metadata",
+      (modelId) => {
+        expect(resolveReasoningEffort("minimal", modelId)).toBe("medium");
+        expect(resolveReasoningEffort("low", modelId)).toBe("medium");
+        expect(resolveReasoningEffort("medium", modelId)).toBe("medium");
+        expect(resolveReasoningEffort("max", modelId)).toBe("xhigh");
+      },
+    );
   });
 
   describe("legacy / non-modern Codex models", () => {

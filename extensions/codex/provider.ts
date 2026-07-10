@@ -36,6 +36,7 @@ const CODEX_APP_SERVER_SETUP_METHOD_ID = "app-server";
 const CODEX_DEFAULT_MODEL_REF = `${CODEX_PROVIDER_ID}/${FALLBACK_CODEX_MODELS[0].id}`;
 const codexCatalogLog = createSubsystemLogger("codex/catalog");
 const CODEX_REASONING_EFFORTS = ["minimal", "low", "medium", "high", "xhigh", "max"] as const;
+const CODEX_PRO_REASONING_EFFORTS = ["medium", "high", "xhigh"] as const;
 
 export type CodexReasoningEffort = (typeof CODEX_REASONING_EFFORTS)[number];
 
@@ -181,14 +182,18 @@ function resolveCodexDynamicModel(modelId: string) {
     return undefined;
   }
   const fallbackModel = FALLBACK_CODEX_MODELS.find((model) => model.id === id);
+  const fallbackReasoningEfforts = resolveCodexFallbackReasoningEfforts(id);
   return normalizeModelCompat({
     ...buildCodexModelDefinition({
       id,
       model: id,
       inputModalities:
         fallbackModel?.inputModalities ??
-        (isMaxReasoningCodexModel(id) ? ["text", "image"] : ["text"]),
-      supportedReasoningEfforts: fallbackModel?.supportedReasoningEfforts,
+        (isMaxReasoningCodexModel(id) || fallbackReasoningEfforts
+          ? ["text", "image"]
+          : ["text"]),
+      supportedReasoningEfforts:
+        fallbackModel?.supportedReasoningEfforts ?? fallbackReasoningEfforts,
     }),
     provider: CODEX_PROVIDER_ID,
     baseUrl: CODEX_BASE_URL,
@@ -312,6 +317,10 @@ function resolveCodexThinkingEfforts(params: {
   if (params.supportedReasoningEfforts) {
     return normalizeCodexReasoningEfforts(params.supportedReasoningEfforts);
   }
+  const fallbackReasoningEfforts = resolveCodexFallbackReasoningEfforts(params.modelId);
+  if (fallbackReasoningEfforts) {
+    return [...fallbackReasoningEfforts];
+  }
   return [
     "minimal",
     "low",
@@ -320,6 +329,16 @@ function resolveCodexThinkingEfforts(params: {
     ...(isKnownXHighCodexModel(params.modelId) ? (["xhigh"] as const) : []),
     ...(isMaxReasoningCodexModel(params.modelId) ? (["max"] as const) : []),
   ];
+}
+
+/** Return the known Codex reasoning contract when live app-server metadata is unavailable. */
+export function resolveCodexFallbackReasoningEfforts(
+  modelId: string,
+): CodexReasoningEffort[] | undefined {
+  const lower = modelId.trim().toLowerCase();
+  return lower === "gpt-5.4-pro" || lower === "gpt-5.5-pro"
+    ? [...CODEX_PRO_REASONING_EFFORTS]
+    : undefined;
 }
 
 /** Map a requested effort onto the authoritative app-server model contract. */
@@ -348,7 +367,9 @@ export function isModernCodexModel(modelId: string): boolean {
     lower === "gpt-5.6" ||
     lower.startsWith("gpt-5.6-") ||
     lower === "gpt-5.5" ||
+    lower === "gpt-5.5-pro" ||
     lower === "gpt-5.4" ||
+    lower === "gpt-5.4-pro" ||
     lower === "gpt-5.4-mini" ||
     lower === "gpt-5.3-codex-spark"
   );
