@@ -56,6 +56,7 @@ const OPENAI_CODEX_GPT_56_THINKING_LEVEL_MAP = {
   xhigh: "xhigh",
   max: "max",
 } as const;
+const OPENAI_CODEX_GPT_56_REASONING_EFFORTS = ["low", "medium", "high", "xhigh", "max"] as const;
 const OPENAI_CODEX_GPT_55_MODEL_ID = "gpt-5.5";
 const OPENAI_CODEX_GPT_55_PRO_MODEL_ID = "gpt-5.5-pro";
 const OPENAI_CODEX_GPT_54_MODEL_ID = "gpt-5.4";
@@ -245,11 +246,26 @@ function resolveCodexForwardCompatModel(ctx: ProviderResolveDynamicModelContext)
       contextTokens: OPENAI_CODEX_GPT_56_CONTEXT_TOKENS,
     });
     if (registeredModel) {
+      const registeredOff = registeredModel.thinkingLevelMap?.off;
+      const registeredReasoningEfforts = registeredModel.compat?.supportedReasoningEfforts?.filter(
+        (effort) => effort !== "none",
+      );
       return normalizeModelCompat({
         ...registeredModel,
         thinkingLevelMap: {
-          ...OPENAI_CODEX_GPT_56_THINKING_LEVEL_MAP,
           ...registeredModel.thinkingLevelMap,
+          ...OPENAI_CODEX_GPT_56_THINKING_LEVEL_MAP,
+          ...(registeredOff !== undefined && registeredOff !== "none"
+            ? { off: registeredOff }
+            : {}),
+        },
+        compat: {
+          ...registeredModel.compat,
+          supportsReasoningEffort: true,
+          supportedReasoningEfforts:
+            registeredReasoningEfforts && registeredReasoningEfforts.length > 0
+              ? registeredReasoningEfforts
+              : [...OPENAI_CODEX_GPT_56_REASONING_EFFORTS],
         },
       } as ProviderRuntimeModel);
     }
@@ -266,6 +282,10 @@ function resolveCodexForwardCompatModel(ctx: ProviderResolveDynamicModelContext)
       contextTokens: OPENAI_CODEX_GPT_56_CONTEXT_TOKENS,
       maxTokens: OPENAI_CODEX_GPT_54_MAX_TOKENS,
       thinkingLevelMap: OPENAI_CODEX_GPT_56_THINKING_LEVEL_MAP,
+      compat: {
+        supportsReasoningEffort: true,
+        supportedReasoningEfforts: [...OPENAI_CODEX_GPT_56_REASONING_EFFORTS],
+      },
     } as ProviderRuntimeModel);
   }
 

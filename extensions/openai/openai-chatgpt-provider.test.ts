@@ -149,6 +149,48 @@ describe("OpenAI provider Codex transport hooks", () => {
     });
   });
 
+  it("strips direct-only GPT-5.6 reasoning metadata from the static OAuth fallback", async () => {
+    const provider = buildOpenAIProvider();
+    const staticCatalog = await provider.staticCatalog?.run({
+      resolveProviderAuth: () => ({ apiKey: undefined, mode: "none", source: "none" }),
+      resolveProviderApiKey: () => ({ apiKey: undefined }),
+      config: {},
+      env: {},
+    } as never);
+    if (!staticCatalog || "provider" in staticCatalog) {
+      throw new Error("expected OpenAI static provider catalog");
+    }
+    const directModel = staticCatalog.providers.openai?.models.find(
+      (model) => model.id === "gpt-5.6-sol",
+    );
+    expect(directModel).toMatchObject({
+      contextWindow: 1_050_000,
+      thinkingLevelMap: { off: "none" },
+      compat: {
+        supportedReasoningEfforts: ["none", "low", "medium", "high", "xhigh", "max"],
+      },
+    });
+
+    const model = provider.resolveDynamicModel?.({
+      provider: "openai",
+      modelId: "gpt-5.6-sol",
+      authProfileMode: "oauth",
+      modelRegistry: { find: () => directModel },
+    } as never);
+
+    expect(model).toMatchObject({
+      api: "openai-chatgpt-responses",
+      baseUrl: "https://chatgpt.com/backend-api/codex",
+      contextWindow: 372_000,
+      contextTokens: 372_000,
+      thinkingLevelMap: { off: null, xhigh: "xhigh", max: "max" },
+      compat: {
+        supportsReasoningEffort: true,
+        supportedReasoningEfforts: ["low", "medium", "high", "xhigh", "max"],
+      },
+    });
+  });
+
   it("keeps default Codex-backed OpenAI catalog models on the Codex Responses transport", () => {
     const provider = buildOpenAIProvider();
 
