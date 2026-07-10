@@ -37,9 +37,12 @@ describe("OpenAI provider policy artifact", () => {
     })?.levels.map((level) => level.id);
 
     expect(solLevels).toContain("max");
+    expect(solLevels).toContain("off");
     expect(terraLevels).toContain("xhigh");
     expect(terraLevels).toContain("max");
+    expect(terraLevels).toContain("off");
     expect(lunaLevels).toContain("xhigh");
     expect(lunaLevels).toContain("max");
+    expect(lunaLevels).toContain("off");
   });
 });

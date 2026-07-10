@@ -60,6 +60,7 @@ const OPENAI_GPT_54_PRO_MODEL_ID = "gpt-5.4-pro";
 const OPENAI_GPT_54_MINI_MODEL_ID = "gpt-5.4-mini";
 const OPENAI_GPT_54_NANO_MODEL_ID = "gpt-5.4-nano";
 const OPENAI_GPT_53_CODEX_SPARK_MODEL_ID = "gpt-5.3-codex-spark";
+const OPENAI_GPT_56_CONTEXT_WINDOW = 1_050_000;
 const OPENAI_GPT_56_CONTEXT_TOKENS = 372_000;
 const OPENAI_GPT_55_CONTEXT_WINDOW = 1_000_000;
 const OPENAI_GPT_55_CONTEXT_TOKENS = 272_000;
@@ -121,10 +122,18 @@ const OPENAI_CHAT_LATEST_TEMPLATE_MODEL_IDS = [
 ] as const;
 const OPENAI_GPT_56_TEMPLATE_MODEL_IDS = [OPENAI_GPT_55_MODEL_ID] as const;
 const OPENAI_GPT_56_THINKING_LEVEL_MAP = {
-  off: null,
+  off: "none",
   xhigh: "xhigh",
   max: "max",
 } as const;
+const OPENAI_GPT_56_REASONING_EFFORTS = [
+  "none",
+  "low",
+  "medium",
+  "high",
+  "xhigh",
+  "max",
+] as const;
 const OPENAI_MODERN_MODEL_IDS = [
   OPENAI_CHAT_LATEST_MODEL_ID,
   OPENAI_GPT_56_SOL_MODEL_ID,
@@ -611,10 +620,14 @@ function resolveOpenAIGptForwardCompatModel(ctx: ProviderResolveDynamicModelCont
       reasoning: true,
       input: ["text", "image"],
       cost,
-      contextWindow: OPENAI_GPT_56_CONTEXT_TOKENS,
+      contextWindow: OPENAI_GPT_56_CONTEXT_WINDOW,
       contextTokens: OPENAI_GPT_56_CONTEXT_TOKENS,
       maxTokens: OPENAI_GPT_54_MAX_TOKENS,
       thinkingLevelMap: OPENAI_GPT_56_THINKING_LEVEL_MAP,
+      compat: {
+        supportsReasoningEffort: true,
+        supportedReasoningEfforts: [...OPENAI_GPT_56_REASONING_EFFORTS],
+      },
     };
   } else if (lower === OPENAI_GPT_55_MODEL_ID) {
     templateIds = [OPENAI_GPT_55_MODEL_ID, OPENAI_GPT_54_MODEL_ID];

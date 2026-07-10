@@ -207,7 +207,22 @@ describe("buildOpenAIProvider", () => {
       "gpt-5.6-terra",
       "gpt-5.6-luna",
     ]);
-    expect(gpt56Models?.map((model) => model.thinkingLevelMap?.off)).toEqual([null, null, null]);
+    expect(gpt56Models?.map((model) => model.thinkingLevelMap?.off)).toEqual([
+      "none",
+      "none",
+      "none",
+    ]);
+    expect(gpt56Models?.map((model) => model.contextWindow)).toEqual([
+      1_050_000, 1_050_000, 1_050_000,
+    ]);
+    expect(gpt56Models?.map((model) => model.contextTokens)).toEqual([
+      372_000, 372_000, 372_000,
+    ]);
+    expect(gpt56Models?.map((model) => model.compat?.supportedReasoningEfforts)).toEqual([
+      ["none", "low", "medium", "high", "xhigh", "max"],
+      ["none", "low", "medium", "high", "xhigh", "max"],
+      ["none", "low", "medium", "high", "xhigh", "max"],
+    ]);
     expect(OPENAI_DEFAULT_MODEL).toBe("openai/gpt-5.5");
   });
 
@@ -1032,17 +1047,17 @@ describe("buildOpenAIProvider", () => {
     {
       id: "gpt-5.6-sol",
       cost: { input: 5, output: 30, cacheRead: 0.5, cacheWrite: 6.25 },
-      thinkingLevelMap: { off: null, xhigh: "xhigh", max: "max" },
+      thinkingLevelMap: { off: "none", xhigh: "xhigh", max: "max" },
     },
     {
       id: "gpt-5.6-terra",
       cost: { input: 2.5, output: 15, cacheRead: 0.25, cacheWrite: 3.125 },
-      thinkingLevelMap: { off: null, xhigh: "xhigh", max: "max" },
+      thinkingLevelMap: { off: "none", xhigh: "xhigh", max: "max" },
     },
     {
       id: "gpt-5.6-luna",
       cost: { input: 1, output: 6, cacheRead: 0.1, cacheWrite: 1.25 },
-      thinkingLevelMap: { off: null, xhigh: "xhigh", max: "max" },
+      thinkingLevelMap: { off: "none", xhigh: "xhigh", max: "max" },
     },
   ])("resolves $id locally with preview metadata", ({ id, cost, thinkingLevelMap }) => {
     const provider = buildOpenAIProvider();
@@ -1075,11 +1090,15 @@ describe("buildOpenAIProvider", () => {
       provider: "openai",
       api: "openai-responses",
       baseUrl: "https://api.openai.com/v1",
-      contextWindow: 372_000,
+      contextWindow: 1_050_000,
       contextTokens: 372_000,
       maxTokens: 128_000,
       cost,
       thinkingLevelMap,
+      compat: {
+        supportsReasoningEffort: true,
+        supportedReasoningEfforts: ["none", "low", "medium", "high", "xhigh", "max"],
+      },
     });
   });
 
