@@ -368,6 +368,7 @@ describe("codex provider", () => {
 
     expectRecordFields(model, {
       id: "gpt-5.6-luna",
+      input: ["text", "image"],
       reasoning: true,
       compat: { supportsUsageInStreaming: true },
     });

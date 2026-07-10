@@ -185,7 +185,9 @@ function resolveCodexDynamicModel(modelId: string) {
     ...buildCodexModelDefinition({
       id,
       model: id,
-      inputModalities: fallbackModel?.inputModalities ?? ["text"],
+      inputModalities:
+        fallbackModel?.inputModalities ??
+        (isMaxReasoningCodexModel(id) ? ["text", "image"] : ["text"]),
       supportedReasoningEfforts: fallbackModel?.supportedReasoningEfforts,
     }),
     provider: CODEX_PROVIDER_ID,
