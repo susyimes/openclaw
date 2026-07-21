@@ -10,7 +10,7 @@ This checkout intentionally does not bundle the upstream mobile/desktop app tree
 - Gateway runtime, daemon/service commands, sessions, cron, tools, policies, and configuration.
 - CLI and Control UI development surfaces.
 - Core agent, model/provider, browser automation, memory, diagnostics, search, diffs, and runtime helper plugins.
-- Provider/plugin catalog entries that match this runtime direction, including Codex, DeepSeek, Kimi, Qwen, OpenAI/local providers, browser/search tooling, diagnostics, diffs, memory-lancedb, OpenShell, parallel, Tavily, SearXNG, Exa, Firecrawl, TokenJuice, and related retained plugins.
+- Provider/plugin catalog entries that match this runtime direction, including Codex, DeepSeek, Kimi, Moonshot, Qwen, xAI, OpenAI/local providers, browser/search tooling, diagnostics, diffs, memory-lancedb, OpenShell, parallel, Tavily, SearXNG, Exa, Firecrawl, TokenJuice, and related retained plugins.
 
 ## What Is Removed Or Not Default
 

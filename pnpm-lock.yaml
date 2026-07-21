@@ -724,6 +724,19 @@ importers:
         specifier: workspace:*
         version: link:../../packages/plugin-sdk
 
+  extensions/xai:
+    dependencies:
+      typebox:
+        specifier: 1.1.39
+        version: 1.1.39
+    devDependencies:
+      '@openclaw/plugin-sdk':
+        specifier: workspace:*
+        version: link:../../packages/plugin-sdk
+      ws:
+        specifier: 8.21.0
+        version: 8.21.0
+
   packages/acp-core:
     dependencies:
       '@openclaw/normalization-core':
