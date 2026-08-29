@@ -95,11 +95,14 @@ function runXaiToolPayloadWrapper(params: {
   );
 }
 
-async function captureXaiResponsesPayloadWithThinking(): Promise<Record<string, unknown>> {
+async function captureXaiResponsesPayloadWithThinking(
+  reasoning: "low" | "xhigh" = "low",
+  modelId = "grok-4.3",
+): Promise<Record<string, unknown>> {
   const model = applyXaiRuntimeModelCompat({
     api: "openai-responses",
     provider: "xai",
-    id: "grok-4.3",
+    id: modelId,
     baseUrl: "https://api.x.ai/v1",
     reasoning: true,
     input: ["text", "image"],
@@ -119,7 +122,7 @@ async function captureXaiResponsesPayloadWithThinking(): Promise<Record<string, 
       {
         apiKey: "test-api-key",
         cacheRetention: "none",
-        reasoning: "low",
+        reasoning,
         onPayload: (payload) => {
           clearTimeout(timeout);
           resolve(structuredClone(payload as Record<string, unknown>));
@@ -448,6 +451,13 @@ describe("xai stream wrappers", () => {
     const payload = await captureXaiResponsesPayloadWithThinking();
 
     expect(payload.reasoning).toEqual({ effort: "low", summary: "auto" });
+    expect(payload.include).toEqual(["reasoning.encrypted_content"]);
+  });
+
+  it("preserves Grok 4.6 xhigh at the final xAI Responses payload boundary", async () => {
+    const payload = await captureXaiResponsesPayloadWithThinking("xhigh", "grok-4.6");
+
+    expect(payload.reasoning).toEqual({ effort: "xhigh", summary: "auto" });
     expect(payload.include).toEqual(["reasoning.encrypted_content"]);
   });
 

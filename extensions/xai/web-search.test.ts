@@ -1107,11 +1107,20 @@ describe("xai provider models", () => {
 
   it("marks current Grok families as modern while excluding multi-agent ids", () => {
     expect(isModernXaiModel("grok-4.3")).toBe(true);
+    expect(isModernXaiModel("grok-4.6")).toBe(true);
     expect(isModernXaiModel("grok-build-0.1")).toBe(true);
     expect(isModernXaiModel("grok-4.20-beta-latest-reasoning")).toBe(true);
     expect(isModernXaiModel("grok-code-fast-1")).toBe(true);
     expect(isModernXaiModel("grok-3-mini-fast")).toBe(false);
     expect(isModernXaiModel("grok-4.20-multi-agent-experimental-beta-0304")).toBe(false);
+  });
+
+  it("resolves Grok 4.6 as a reasoning-capable forward model", () => {
+    expectCatalogEntry("grok-4.6", {
+      id: "grok-4.6",
+      reasoning: true,
+      input: ["text", "image"],
+    });
   });
 
   it("builds forward-compatible runtime models for newer Grok ids", () => {

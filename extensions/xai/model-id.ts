@@ -1,4 +1,8 @@
 // Xai plugin module implements model id behavior.
+export function isXaiGrok46ModelId(id: string): boolean {
+  return normalizeXaiModelId(id.trim().toLowerCase()) === "grok-4.6";
+}
+
 export function normalizeXaiModelId(id: string): string {
   if (id === "grok-code-fast-1" || id === "grok-code-fast" || id === "grok-code-fast-1-0825") {
     return "grok-build-0.1";

@@ -1,6 +1,7 @@
 // Xai plugin module implements model definitions behavior.
 import type { ModelDefinitionConfig } from "openclaw/plugin-sdk/provider-model-shared";
 import { normalizeOptionalLowercaseString } from "openclaw/plugin-sdk/string-coerce-runtime";
+import { isXaiGrok46ModelId } from "./model-id.js";
 
 export const XAI_BASE_URL = "https://api.x.ai/v1";
 export const XAI_DEFAULT_IMAGE_MODEL = "grok-imagine-image";
@@ -310,6 +311,7 @@ export function resolveXaiCatalogEntry(modelId: string) {
     });
   }
   if (
+    isXaiGrok46ModelId(lower) ||
     lower.startsWith("grok-4.3") ||
     lower.startsWith("grok-4.20") ||
     lower.startsWith("grok-4-1") ||
@@ -320,11 +322,14 @@ export function resolveXaiCatalogEntry(modelId: string) {
       name: trimmed,
       reasoning: !lower.includes("non-reasoning"),
       input: ["text", "image"],
-      contextWindow: lower.startsWith("grok-4.3")
+      contextWindow: isXaiGrok46ModelId(lower) || lower.startsWith("grok-4.3")
         ? XAI_DEFAULT_CONTEXT_WINDOW
         : XAI_LARGE_CONTEXT_WINDOW,
-      maxTokens: lower.startsWith("grok-4.3") ? XAI_DEFAULT_MAX_TOKENS : 30_000,
-      cost: lower.startsWith("grok-4.3")
+      maxTokens:
+        isXaiGrok46ModelId(lower) || lower.startsWith("grok-4.3")
+          ? XAI_DEFAULT_MAX_TOKENS
+          : 30_000,
+      cost: isXaiGrok46ModelId(lower) || lower.startsWith("grok-4.3")
         ? XAI_GROK_43_COST
         : lower.startsWith("grok-4.20")
           ? XAI_GROK_420_COST
