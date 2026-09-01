@@ -286,6 +286,31 @@ describe("Responses reasoning effort", () => {
 describe("convertResponsesMessages", () => {
   const allowedToolCallProviders = new Set(["openai", "openai-codex", "opencode"]);
 
+  it("keeps empty non-image tool results empty", () => {
+    const input = convertResponsesMessages(
+      nativeOpenAIModel,
+      {
+        systemPrompt: "system",
+        messages: [
+          {
+            role: "toolResult",
+            toolCallId: "call_empty",
+            toolName: "read",
+            content: [{ type: "text", text: "" }],
+            isError: false,
+            timestamp: 1,
+          },
+        ],
+      } satisfies Context,
+      allowedToolCallProviders,
+    ) as unknown as Array<Record<string, unknown>>;
+
+    expect(input.find((item) => item.type === "function_call_output")).toMatchObject({
+      call_id: "call_empty",
+      output: "",
+    });
+  });
+
   it("adds explicit message item types for system and user input items", () => {
     const input = convertResponsesMessages(
       nativeOpenAIModel,

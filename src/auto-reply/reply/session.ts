@@ -82,6 +82,10 @@ import {
   type ReplySessionEntryHandle,
 } from "./session-entry-handle.js";
 import { buildSessionEndHookPayload, buildSessionStartHookPayload } from "./session-hooks.js";
+import {
+  ReplySessionInitConflictError,
+  runWithSessionInitConflictRetry,
+} from "./session-init-conflict-retry.js";
 import { prepareReplySessionParentFork } from "./session-parent-fork-prepare.js";
 import { clearSessionResetRuntimeState } from "./session-reset-cleanup.js";
 
@@ -184,6 +188,7 @@ export type InitSessionStateParams = {
   ctx: MsgContext;
   requestedSessionId?: string;
   resumeRequestedSession?: boolean;
+  signal?: AbortSignal;
 };
 
 function resolveSessionConversationBindingContext(
@@ -246,7 +251,10 @@ function resolveBoundConversationSessionKey(params: {
 
 /** Initializes or reuses the reply session state for one inbound turn. */
 export async function initSessionState(params: InitSessionStateParams): Promise<SessionInitResult> {
-  return await initSessionStateAttempt(params, false);
+  return await runWithSessionInitConflictRetry(
+    async () => await initSessionStateAttempt(params, false),
+    { signal: params.signal },
+  );
 }
 
 async function initSessionStateAttempt(
@@ -773,6 +781,9 @@ async function initSessionStateAttempt(
   }
   const parentSessionKey = normalizeOptionalString(ctx.ParentSessionKey);
   const alreadyForked = sessionEntry.forkedFromParent === true;
+  if (params.signal?.aborted === true) {
+    throw new Error("reply session initialization aborted");
+  }
   const threadIdFromSessionKey = parseSessionThreadInfoFast(
     sessionCtxForState.SessionKey ?? sessionKey,
   ).threadId;
@@ -839,8 +850,11 @@ async function initSessionStateAttempt(
         entry: sessionEntry,
         warning,
       }),
-    prepareSessionEntry: async ({ readEntry, sessionEntry: entryToCommit }) =>
-      await prepareReplySessionParentFork({
+    prepareSessionEntry: async ({ readEntry, sessionEntry: entryToCommit }) => {
+      if (params.signal?.aborted === true) {
+        throw new Error("reply session initialization aborted");
+      }
+      return await prepareReplySessionParentFork({
         agentId,
         alreadyForked,
         parentSessionKey,
@@ -849,7 +863,8 @@ async function initSessionStateAttempt(
         sessionKey,
         storePath,
         warn: (message) => log.warn(message),
-      }),
+      });
+    },
     previousEntry: previousSessionEntry,
     retiredEntry: retiredLegacyMainDelivery,
     sessionEntry,
@@ -860,7 +875,9 @@ async function initSessionStateAttempt(
     if (!staleSnapshotRetried) {
       return await initSessionStateAttempt(params, true);
     }
-    throw new Error(`reply session initialization conflicted for ${sessionKey}`);
+    // Propagate a typed conflict so initSessionState can retry with backoff
+    // outside the store writer lane instead of surfacing this to the caller.
+    throw new ReplySessionInitConflictError(sessionKey);
   }
   sessionEntry = committed.sessionEntry;
   sessionId = sessionEntry.sessionId;
